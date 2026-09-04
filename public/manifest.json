@@ -1,0 +1,17 @@
+{
+  "name": "Fixo - Técnicos y Oficios",
+  "short_name": "Fixo",
+  "description": "La red de tus mejores chambas. Directorio local y tarjeta digital para técnicos y oficios en Chiapas.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#0F172A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

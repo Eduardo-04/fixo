@@ -1,0 +1,238 @@
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import {
+  ShieldCheck,
+  FileCheck2,
+  MapPin,
+  Calendar,
+  Briefcase,
+  Share2,
+  CheckCircle2,
+  ArrowLeft,
+  Sparkles,
+} from 'lucide-react';
+import { MOCK_TECHNICIANS } from '@/lib/mock-data';
+import WhatsAppButton from '@/components/shared/WhatsAppButton';
+import QRCodeCard from '@/components/technician/QRCodeCard';
+import PortfolioGrid from '@/components/technician/PortfolioGrid';
+import { trackProfileView } from '@/app/actions';
+
+interface TechnicianProfileProps {
+  params: { slug: string };
+}
+
+export async function generateMetadata({ params }: TechnicianProfileProps): Promise<Metadata> {
+  const tech = MOCK_TECHNICIANS.find((t) => t.slug === params.slug);
+  if (!tech) return { title: 'Técnico no encontrado | Fixo' };
+
+  const categoryNames = tech.categories?.map((c) => c.name).join(', ') || 'Servicios Técnicos';
+
+  return {
+    title: `${tech.full_name} - ${categoryNames} en Tuxtla Gutiérrez | Fixo`,
+    description: `${tech.bio || 'Técnico verificado en Tuxtla Gutiérrez.'} Contacta directo por WhatsApp o escanea su tarjeta digital QR.`,
+    openGraph: {
+      title: `${tech.full_name} | ${categoryNames} en Fixo`,
+      description: `Especialista con ${tech.experience_years} años de experiencia en Tuxtla Gutiérrez. Cotiza por WhatsApp.`,
+      images: tech.avatar_url ? [{ url: tech.avatar_url }] : [],
+    },
+  };
+}
+
+export default async function TechnicianPublicProfile({ params }: TechnicianProfileProps) {
+  const tech = MOCK_TECHNICIANS.find((t) => t.slug === params.slug);
+
+  if (!tech) {
+    notFound();
+  }
+
+  // Incremento atómico en background del contador de visitas (Server Action)
+  await trackProfileView(tech.slug);
+
+  const isVerified = tech.verification_status === 'verified';
+  const categoryNames = tech.categories?.map((c) => c.name).join(' • ') || 'Servicios Técnicos';
+
+  return (
+    <div className="bg-slate-50 min-h-screen pb-24">
+      {/* Botón flotante de WhatsApp en móviles/escritorio */}
+      <WhatsAppButton
+        phone={tech.phone_whatsapp}
+        technicianName={tech.full_name}
+        profileId={tech.id}
+        variant="floating"
+      />
+
+      {/* Top Banner de Retorno */}
+      <div className="bg-brand-base border-b border-slate-800 text-white py-3 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Volver al Directorio</span>
+          </Link>
+          <span className="text-[11px] text-slate-400 font-mono">
+            ID: {tech.slug}
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* TARJETA PRINCIPAL DEL TÉCNICO */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden bg-slate-100 border-2 border-brand-primary/30 shadow-md">
+                {tech.avatar_url ? (
+                  <img
+                    src={tech.avatar_url}
+                    alt={tech.full_name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-slate-800 text-white flex items-center justify-center font-bold text-3xl font-mono">
+                    {tech.full_name.charAt(0)}
+                  </div>
+                )}
+              </div>
+
+              {tech.is_pro && (
+                <div className="absolute -bottom-2 -right-2 bg-brand-primary text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full shadow border-2 border-white">
+                  PRO
+                </div>
+              )}
+            </div>
+
+            {/* Datos Principales */}
+            <div className="flex-1 space-y-2 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                {isVerified && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-300">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>✓ Identidad Verificada (INE)</span>
+                  </span>
+                )}
+
+                {tech.emits_cfdi && (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    <FileCheck2 className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Factura Disponible (CFDI)</span>
+                  </span>
+                )}
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+                {tech.full_name}
+              </h1>
+
+              <p className="text-sm font-bold text-brand-primary">
+                {categoryNames}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
+                <span className="flex items-center gap-1">
+                  <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                  <strong>{tech.experience_years} años</strong> de experiencia
+                </span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-brand-primary" />
+                  <span>{tech.city}, Chiapas</span>
+                </span>
+              </div>
+            </div>
+
+            {/* CTA WhatsApp Principal */}
+            <div className="w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
+              <WhatsAppButton
+                phone={tech.phone_whatsapp}
+                technicianName={tech.full_name}
+                profileId={tech.id}
+                variant="primary"
+                className="w-full sm:w-auto"
+              />
+            </div>
+          </div>
+
+          {/* Biografía / Descripción del Servicio */}
+          {tech.bio && (
+            <div className="mt-6 pt-6 border-t border-slate-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                Acerca de mis servicios
+              </h3>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                {tech.bio}
+              </p>
+            </div>
+          )}
+
+          {/* Colonias con Cobertura */}
+          {tech.neighborhoods_covered && tech.neighborhoods_covered.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-slate-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+                Zonas y Colonias con Cobertura Inmediata
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {tech.neighborhoods_covered.map((col) => (
+                  <span
+                    key={col}
+                    className="inline-flex items-center gap-1 text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg border border-slate-200"
+                  >
+                    <MapPin className="w-3 h-3 text-slate-400" />
+                    <span>{col}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* DOS COLUMNAS: PORTAFOLIO Y CÓDIGO QR */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Portafolio de Trabajos (2 columnas) */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 font-mono">
+                  Trabajos Realizados
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Fotografías comprobables de reparaciones e instalaciones
+                </p>
+              </div>
+              <span className="text-xs font-semibold bg-orange-50 text-brand-primary px-2.5 py-1 rounded-lg border border-orange-200">
+                {tech.portfolio?.length || 0} fotos
+              </span>
+            </div>
+
+            <PortfolioGrid items={tech.portfolio || []} />
+          </div>
+
+          {/* Tarjeta Digital & QR Descargable (1 columna) */}
+          <div className="space-y-6">
+            <QRCodeCard
+              slug={tech.slug}
+              technicianName={tech.full_name}
+              specialty={categoryNames}
+              phone={tech.phone_whatsapp}
+              emitsCfdi={tech.emits_cfdi}
+              isVerified={isVerified}
+            />
+
+            {/* Garantía de Trato Directo */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+              <div className="flex items-center gap-2 text-brand-primary font-bold text-xs uppercase tracking-wider">
+                <Sparkles className="w-4 h-4" />
+                <span>Trato 100% Directo</span>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                En Fixo no cobramos comisiones por mano de obra. Todo el acuerdo, pago y garantía lo tratas directamente con el técnico por WhatsApp.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
