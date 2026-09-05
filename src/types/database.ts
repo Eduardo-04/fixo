@@ -25,6 +25,7 @@ export interface Profile {
   verification_status: VerificationStatus;
   is_pro: boolean;
   pro_expires_at: string | null;
+  boost_expires_at: string | null;
   views_count: number;
   whatsapp_clicks: number;
   rating: number;
@@ -53,6 +54,7 @@ export interface PortfolioItem {
   profile_id: string;
   title: string;
   description: string | null;
+  item_type: 'image' | 'video';
   image_url: string;
   is_before_after: boolean;
   before_image_url: string | null;

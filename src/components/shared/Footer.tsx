@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ShieldCheck, Wrench, Heart, MapPin, QrCode } from 'lucide-react';
+import DonationButton from './DonationButton';
 
 export default function Footer() {
   return (
@@ -113,6 +114,11 @@ export default function Footer() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Banner de Apoyo (Donaciones) */}
+        <div className="pt-8 mb-8 border-t border-slate-800/50">
+          <DonationButton />
         </div>
 
         <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">

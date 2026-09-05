@@ -42,15 +42,6 @@ function LoginForm() {
     setLoading(true);
     setErrorMsg(null);
 
-    // Si no hay Supabase real conectado, navegar directo al Dashboard
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    if (!supabaseUrl || supabaseUrl.includes('mockfixo')) {
-      setTimeout(() => {
-        router.push('/portal/dashboard');
-      }, 300);
-      return;
-    }
-
     const supabase = createClient();
 
     try {
@@ -70,7 +61,7 @@ function LoginForm() {
 
         if (authData.user) {
           const generatedSlug = slugify(fullName) + '-' + Math.floor(1000 + Math.random() * 9000);
-          await (supabase.from('profiles') as any).insert({
+          const { error: profileError } = await (supabase.from('profiles') as any).insert({
             id: authData.user.id,
             full_name: fullName,
             slug: generatedSlug,
@@ -79,6 +70,11 @@ function LoginForm() {
             city: 'Tuxtla Gutiérrez',
             state: 'Chiapas',
           });
+          
+          if (profileError) {
+            // Clean up auth user if profile creation fails? For now just throw.
+            throw new Error('No se pudo crear el perfil público (Error de seguridad). Verifica que ejecutaste el script SQL.');
+          }
         }
 
         router.push('/portal/dashboard');
@@ -93,8 +89,17 @@ function LoginForm() {
         router.push('/portal/dashboard');
       }
     } catch (err: any) {
-      // En fallback local, entrar de todas maneras
-      router.push('/portal/dashboard');
+      console.error('Auth error:', err);
+      // Map common Supabase error messages to Spanish
+      if (err.message.includes('Invalid login credentials')) {
+        setErrorMsg('Correo o contraseña incorrectos.');
+      } else if (err.message.includes('User already registered')) {
+        setErrorMsg('Este correo ya está registrado.');
+      } else if (err.message.includes('Password should be at least')) {
+        setErrorMsg('La contraseña debe tener al menos 6 caracteres.');
+      } else {
+        setErrorMsg(err.message || 'Ocurrió un error inesperado.');
+      }
     } finally {
       setLoading(false);
     }
@@ -216,17 +221,7 @@ function LoginForm() {
             </button>
           </form>
 
-          {/* Botón de Acceso Demo Instantáneo para Pruebas */}
-          <div className="pt-2">
-            <button
-              type="button"
-              onClick={() => router.push('/portal/dashboard')}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-brand-primary border border-amber-200/80 flex items-center justify-center gap-2 transition-all"
-            >
-              <Sparkles className="w-4 h-4 text-brand-primary" />
-              <span>⚡ Probar Dashboard Demo (Carlos Morales)</span>
-            </button>
-          </div>
+
 
           {/* Toggle entre login y registro */}
           <div className="pt-3 border-t border-slate-100 text-center">

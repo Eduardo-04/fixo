@@ -62,6 +62,7 @@ export async function updateSession(request: NextRequest) {
 
     // En modo preview/desarrollo sin Supabase configurado en producción, no bloquear
     const isMockEnv = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('mockfixo');
+    const path = request.nextUrl.pathname;
 
     if (!isMockEnv) {
       // Rutas protegidas del técnico

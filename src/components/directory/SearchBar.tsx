@@ -103,7 +103,7 @@ export default function SearchBar({
           <select
             value={state}
             onChange={(e) => handleStateChange(e.target.value)}
-            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 p-0 cursor-pointer"
+            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 py-0 pl-0 pr-7 cursor-pointer truncate"
           >
             <option value="Todos los estados">Todos los estados</option>
             {ALL_STATES.map((s) => (
@@ -120,7 +120,7 @@ export default function SearchBar({
           <select
             value={city}
             onChange={(e) => handleCityChange(e.target.value)}
-            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 p-0 cursor-pointer"
+            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 py-0 pl-0 pr-7 cursor-pointer truncate"
             disabled={state === 'Todos los estados'}
           >
             <option value="Todas las ciudades">Todas las ciudades</option>

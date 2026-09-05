@@ -5,17 +5,26 @@ import CategoryCard from '@/components/directory/CategoryCard';
 import TechnicianCard from '@/components/directory/TechnicianCard';
 import SponsorBanner from '@/components/shared/SponsorBanner';
 import SponsorBannerGrid from '@/components/shared/SponsorBannerGrid';
-import { MOCK_CATEGORIES, MOCK_TECHNICIANS } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/server';
 
-export default function HomePage() {
-  // Ordenamiento estricto: is_pro = true primero, luego verified
-  const featuredTechnicians = [...MOCK_TECHNICIANS].sort((a, b) => {
-    if (a.is_pro && !b.is_pro) return -1;
-    if (!a.is_pro && b.is_pro) return 1;
-    if (a.verification_status === 'verified' && b.verification_status !== 'verified') return -1;
-    if (a.verification_status !== 'verified' && b.verification_status === 'verified') return 1;
-    return b.views_count - a.views_count;
-  });
+export default async function HomePage() {
+  const supabase = createClient();
+
+  // Fetch Categories
+  const { data: categories = [] } = await supabase
+    .from('categories')
+    .select('*')
+    .order('id');
+
+  // Fetch Featured Technicians (Boosted first, then PRO)
+  const { data: featuredTechnicians = [] } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('boost_expires_at', { ascending: false, nullsFirst: false })
+    .order('is_pro', { ascending: false })
+    .order('verification_status', { ascending: false })
+    .order('views_count', { ascending: false })
+    .limit(4);
 
   return (
     <div className="space-y-12 sm:space-y-16 pb-16">
@@ -85,7 +94,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {MOCK_CATEGORIES.map((category) => (
+          {categories?.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>
@@ -119,7 +128,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {featuredTechnicians.map((technician) => (
+          {featuredTechnicians?.map((technician) => (
             <TechnicianCard key={technician.id} technician={technician} />
           ))}
         </div>

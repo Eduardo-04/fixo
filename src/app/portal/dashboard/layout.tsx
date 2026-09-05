@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -30,10 +31,31 @@ export default function DashboardLayout({
     { label: 'Mi QR y Flyer', href: '/portal/dashboard/mi-qr', icon: QrCode },
   ];
 
+  const [slug, setSlug] = useState<string>('');
+
+  useEffect(() => {
+    async function fetchSlug() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('slug')
+        .eq('id', user.id)
+        .single();
+        
+      if (profile) {
+        setSlug(profile.slug);
+      }
+    }
+    fetchSlug();
+  }, []);
+
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push('/');
+    router.push('/portal/login');
   };
 
   return (
@@ -78,14 +100,16 @@ export default function DashboardLayout({
 
         {/* Footer del Sidebar */}
         <div className="p-4 border-t border-slate-800 space-y-2">
-          <Link
-            href="/t/carlos-morales-climas"
-            target="_blank"
-            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/50 hover:bg-slate-800 transition-colors"
-          >
-            <span>Ver mi perfil público</span>
-            <ExternalLink className="w-3.5 h-3.5 text-brand-accent" />
-          </Link>
+          {slug && (
+            <Link
+              href={`/t/${slug}`}
+              target="_blank"
+              className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800/50 hover:bg-slate-800 transition-colors"
+            >
+              <span>Ver mi perfil público</span>
+              <ExternalLink className="w-3.5 h-3.5 text-brand-accent" />
+            </Link>
+          )}
 
           <button
             type="button"

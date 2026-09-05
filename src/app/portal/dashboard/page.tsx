@@ -1,10 +1,35 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Eye, MessageCircle, TrendingUp, ShieldCheck, QrCode, ArrowUpRight, Award } from 'lucide-react';
-import { MOCK_TECHNICIANS } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/server';
 
-export default function DashboardSummaryPage() {
-  // Simulando perfil del técnico logueado (Carlos Morales)
-  const tech = MOCK_TECHNICIANS[0];
+export default async function DashboardSummaryPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/portal/login');
+  }
+
+  const { data: tech } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (!tech) {
+    return (
+      <div className="p-8 text-center space-y-4">
+        <h2 className="text-xl font-bold text-red-600">Error de Perfil Incompleto</h2>
+        <p className="text-slate-600">
+          Tu cuenta existe en el sistema, pero no se pudo crear tu "Ficha Pública de Técnico" por un problema de seguridad en la base de datos que ya fue solucionado.
+        </p>
+        <p className="text-slate-600 font-semibold">
+          Para solucionar esto, por favor crea una cuenta nueva utilizando otro correo electrónico (ej. agregando un número).
+        </p>
+      </div>
+    );
+  }
 
   const conversionRate = ((tech.whatsapp_clicks / (tech.views_count || 1)) * 100).toFixed(1);
 

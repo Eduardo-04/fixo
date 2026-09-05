@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Banner, BannerPlacement } from '@/types/database';
-import { MOCK_BANNERS } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/client';
 import SponsorBanner from './SponsorBanner';
 
 interface SponsorBannerGridProps {
@@ -12,19 +12,28 @@ interface SponsorBannerGridProps {
 
 export default function SponsorBannerGrid({ placement, categoryId }: SponsorBannerGridProps) {
   const [banners, setBanners] = useState<Banner[]>([]);
+  const supabase = createClient();
 
   useEffect(() => {
-    // Filtrar todos los banners activos que coincidan con la ubicación
-    let matched = MOCK_BANNERS.filter((b) => b.placement === placement && b.is_active);
-    
-    if (categoryId) {
-      const categoryMatched = matched.filter((b) => b.category_id === categoryId);
-      if (categoryMatched.length > 0) {
-        matched = categoryMatched;
+    async function fetchBanners() {
+      let query = supabase
+        .from('banners')
+        .select('*')
+        .eq('placement', placement)
+        .eq('is_active', true);
+
+      if (categoryId) {
+        query = query.eq('category_id', categoryId);
+      }
+
+      const { data, error } = await query;
+      
+      if (data) {
+        setBanners(data);
       }
     }
     
-    setBanners(matched);
+    fetchBanners();
   }, [placement, categoryId]);
 
   if (banners.length === 0) return null;

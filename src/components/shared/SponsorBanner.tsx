@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ExternalLink, X } from 'lucide-react';
 import type { Banner, BannerPlacement } from '@/types/database';
 import { trackBannerImpression, trackBannerClick } from '@/app/actions';
-import { MOCK_BANNERS } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/client';
 
 interface SponsorBannerProps {
   placement: BannerPlacement;
@@ -22,15 +22,29 @@ export default function SponsorBanner({
 }: SponsorBannerProps) {
   const [banner, setBanner] = useState<Banner | null>(propBanner || null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
-    if (!propBanner) {
-      // Buscar banner coincidente en mocks si no viene de props
-      const matched = MOCK_BANNERS.find(
-        (b) => b.placement === placement && (!categoryId || b.category_id === categoryId)
-      ) || MOCK_BANNERS.find((b) => b.placement === placement);
-      setBanner(matched || null);
+    async function loadBanner() {
+      if (!propBanner) {
+        let query = supabase
+          .from('banners')
+          .select('*')
+          .eq('placement', placement)
+          .eq('is_active', true);
+          
+        if (categoryId) {
+          query = query.eq('category_id', categoryId);
+        }
+        
+        const { data, error } = await query.limit(1).single();
+        if (data) {
+          setBanner(data);
+        }
+      }
     }
+    
+    loadBanner();
   }, [placement, categoryId, propBanner]);
 
   useEffect(() => {
@@ -99,54 +113,55 @@ export default function SponsorBanner({
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl relative animate-in fade-in zoom-in duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-700/60 rounded-[2rem] w-full max-w-md shadow-2xl relative animate-in fade-in zoom-in duration-300 overflow-hidden flex flex-col max-h-[90vh]">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 text-white bg-black/40 hover:bg-black/60 rounded-full transition-colors backdrop-blur-md"
+              className="absolute top-4 right-4 z-10 p-2 text-slate-300 hover:text-white bg-slate-900/40 hover:bg-slate-800 rounded-full transition-all backdrop-blur-md border border-slate-700/50 hover:scale-105"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="relative w-full aspect-video bg-slate-900 shrink-0">
+            <div className="relative w-full shrink-0 flex justify-center bg-slate-950">
               <img
                 src={banner.banner_image_url}
                 alt={banner.sponsor_name}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
+                className="w-full max-h-[50vh] object-contain"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <div className="absolute bottom-4 left-6">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-brand-primary/90 px-2 py-0.5 rounded-md mb-2 inline-block shadow">
-                  Patrocinador
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent pointer-events-none" />
+              
+              <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-primary mb-1.5 block drop-shadow-lg">
+                  Patrocinador Oficial
                 </span>
-                <h3 className="text-2xl font-black text-white font-mono leading-tight">
+                <h3 className="text-2xl sm:text-3xl font-black text-white font-mono leading-tight drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
                   {banner.sponsor_name}
                 </h3>
               </div>
             </div>
 
-            <div className="p-6 overflow-y-auto">
-              <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 mb-6 shadow-inner text-center">
-                <p className="text-sm font-semibold text-brand-primary">
-                  {banner.description || 'Visita nuestro sitio para más información y beneficios.'}
-                </p>
-              </div>
+            <div className="px-6 pb-6 pt-2 overflow-y-auto">
+              <p className="text-base text-slate-300 leading-relaxed mb-8 font-medium">
+                {banner.description || 'Visita nuestro sitio para más información y beneficios.'}
+              </p>
 
               <a
                 href={banner.target_url}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setIsModalOpen(false)}
-                className="w-full flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold px-4 py-4 rounded-xl transition-all shadow-lg hover:shadow-brand-primary/40 hover:-translate-y-0.5"
+                className="group w-full flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primary-hover text-white font-bold px-4 py-4 rounded-2xl transition-all shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/40 hover:-translate-y-1"
               >
                 <span>Obtener Beneficio / Contactar</span>
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               </a>
               
-              <p className="text-center text-xs text-slate-400 mt-4">
-                {banner.city} • Apoyando el comercio local
-              </p>
+              <div className="mt-6 flex items-center justify-center gap-3 text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                <span className="flex-1 h-px bg-slate-800"></span>
+                <span>{banner.city}</span>
+                <span className="flex-1 h-px bg-slate-800"></span>
+              </div>
             </div>
           </div>
         </div>
