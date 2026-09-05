@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShieldCheck, Image as ImageIcon, Users, ArrowLeft, BarChart3 } from 'lucide-react';
+import { ShieldCheck, Image as ImageIcon, Users, ArrowLeft, BarChart3, Megaphone } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -31,6 +31,13 @@ export default function AdminLayout({
             >
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>Aprobación de INE</span>
+            </Link>
+            <Link
+              href="/admin/anuncios"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <Megaphone className="w-4 h-4 text-purple-400" />
+              <span>Anuncios Globales</span>
             </Link>
             <Link
               href="/admin/banners"

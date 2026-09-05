@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ImageUploader from '@/components/technician/ImageUploader';
 import PortfolioGrid from '@/components/technician/PortfolioGrid';
-import { MOCK_TECHNICIANS } from '@/lib/mock-data';
 import { PlusCircle, Check } from 'lucide-react';
 import type { PortfolioItem } from '@/types/database';
+import { createClient } from '@/lib/supabase/client';
 
 export default function PortfolioPage() {
-  const tech = MOCK_TECHNICIANS[0];
-  const [items, setItems] = useState<PortfolioItem[]>(tech.portfolio || []);
+  const [items, setItems] = useState<PortfolioItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -17,32 +18,95 @@ export default function PortfolioPage() {
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [beforeImage, setBeforeImage] = useState<File | null>(null);
   const [successMsg, setSuccessMsg] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleAddItem = (e: React.FormEvent) => {
+  const [uploadKey, setUploadKey] = useState(Date.now());
+
+  useEffect(() => {
+    async function loadPortfolio() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        const { data } = await supabase
+          .from('portfolio_items')
+          .select('*')
+          .eq('profile_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (data) setItems(data as PortfolioItem[]);
+      }
+      setLoading(false);
+    }
+    loadPortfolio();
+  }, []);
+
+  const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mainImage) return;
+    if (!mainImage || !userId) return;
 
-    // Crear item temporal en vista previa
-    const newItem: PortfolioItem = {
-      id: 'temp-' + Date.now(),
-      profile_id: tech.id,
-      title,
-      description,
-      image_url: URL.createObjectURL(mainImage),
-      is_before_after: isBeforeAfter,
-      before_image_url: beforeImage ? URL.createObjectURL(beforeImage) : null,
-      created_at: new Date().toISOString(),
-    };
+    setIsUploading(true);
+    const supabase = createClient();
+    
+    try {
+      // 1. Subir imagen principal
+      const mainPath = `${userId}/${Date.now()}_main.webp`;
+      const { data: mainUpload, error: mainError } = await supabase.storage
+        .from('public-media')
+        .upload(mainPath, mainImage);
+        
+      if (mainError) throw mainError;
+      const mainUrl = supabase.storage.from('public-media').getPublicUrl(mainPath).data.publicUrl;
 
-    setItems([newItem, ...items]);
-    setTitle('');
-    setDescription('');
-    setIsBeforeAfter(false);
-    setMainImage(null);
-    setBeforeImage(null);
-    setSuccessMsg(true);
-    setTimeout(() => setSuccessMsg(false), 3000);
+      // 2. Subir imagen del antes (si aplica)
+      let beforeUrl = null;
+      if (isBeforeAfter && beforeImage) {
+        const beforePath = `${userId}/${Date.now()}_before.webp`;
+        const { data: beforeUpload, error: beforeError } = await supabase.storage
+          .from('public-media')
+          .upload(beforePath, beforeImage);
+          
+        if (beforeError) throw beforeError;
+        beforeUrl = supabase.storage.from('public-media').getPublicUrl(beforePath).data.publicUrl;
+      }
+
+      // 3. Insertar en base de datos
+      const { data: newItem, error: insertError } = await supabase
+        .from('portfolio_items')
+        .insert({
+          profile_id: userId,
+          title,
+          description,
+          image_url: mainUrl,
+          is_before_after: isBeforeAfter,
+          before_image_url: beforeUrl,
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Actualizar vista
+      setItems([newItem as PortfolioItem, ...items]);
+      setTitle('');
+      setDescription('');
+      setIsBeforeAfter(false);
+      setMainImage(null);
+      setBeforeImage(null);
+      setUploadKey(Date.now()); // Forzar reinicio de ImageUploader
+      setSuccessMsg(true);
+      setTimeout(() => setSuccessMsg(false), 3000);
+    } catch (error) {
+      console.error('Error al subir trabajo:', error);
+      alert('Error al guardar el trabajo. Asegúrate de haber configurado Supabase Storage.');
+    } finally {
+      setIsUploading(false);
+    }
   };
+
+  if (loading) {
+    return <div className="p-8 text-center text-slate-500 font-medium">Cargando portafolio...</div>;
+  }
 
   return (
     <div className="space-y-8">
@@ -51,7 +115,7 @@ export default function PortfolioPage() {
           Portafolio de Trabajos
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Muestra fotos de tus reparaciones e instalaciones con soporte de "Antes y Después". Las fotos se comprimen en tu navegador antes de subirse.
+          Muestra fotos de tus reparaciones e instalaciones con soporte de "Antes y Después". Las fotos se comprimen en tu navegador antes de subirse a la nube.
         </p>
       </div>
 
@@ -65,7 +129,7 @@ export default function PortfolioPage() {
         {successMsg && (
           <div className="mb-4 flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 rounded-xl font-medium">
             <Check className="w-4 h-4 text-emerald-600" />
-            <span>Trabajo publicado en tu perfil correctamente.</span>
+            <span>Trabajo guardado en tu perfil correctamente.</span>
           </div>
         )}
 
@@ -115,12 +179,14 @@ export default function PortfolioPage() {
           {/* Subidores de fotos con compresión client-side */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <ImageUploader
+              key={`main-${uploadKey}`}
               label="Foto del Trabajo Terminado (Principal)"
               onFileReady={(compressed) => setMainImage(compressed)}
             />
 
             {isBeforeAfter && (
               <ImageUploader
+                key={`before-${uploadKey}`}
                 label="Foto del Antes (Equipo dañado / Fuga previa)"
                 onFileReady={(compressed) => setBeforeImage(compressed)}
               />
@@ -130,10 +196,10 @@ export default function PortfolioPage() {
           <div className="flex justify-end pt-3">
             <button
               type="submit"
-              disabled={!mainImage}
-              className="bg-brand-primary hover:bg-brand-primary-hover disabled:opacity-40 text-white text-xs font-bold px-6 py-3 rounded-xl shadow-md transition-all"
+              disabled={!mainImage || isUploading}
+              className="bg-brand-primary hover:bg-brand-primary-hover disabled:opacity-40 text-white text-xs font-bold px-6 py-3 rounded-xl shadow-md transition-all flex items-center gap-2"
             >
-              Publicar Trabajo en mi Perfil
+              {isUploading ? 'Subiendo imagen...' : 'Publicar Trabajo en mi Perfil'}
             </button>
           </div>
         </form>
@@ -144,7 +210,13 @@ export default function PortfolioPage() {
         <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">
           Tus Trabajos Publicados ({items.length})
         </h3>
-        <PortfolioGrid items={items} />
+        {items.length === 0 ? (
+          <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-3xl text-slate-500 text-sm">
+            Aún no has publicado trabajos. Sube el primero arriba para destacarte ante los clientes.
+          </div>
+        ) : (
+          <PortfolioGrid items={items} />
+        )}
       </div>
     </div>
   );

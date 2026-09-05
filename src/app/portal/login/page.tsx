@@ -52,6 +52,7 @@ function LoginForm() {
           options: {
             data: {
               full_name: fullName,
+              phone: phone, // Agregado para que el Trigger lo lea
               role: 'technician',
             },
           },
@@ -59,23 +60,7 @@ function LoginForm() {
 
         if (authError) throw authError;
 
-        if (authData.user) {
-          const generatedSlug = slugify(fullName) + '-' + Math.floor(1000 + Math.random() * 9000);
-          const { error: profileError } = await (supabase.from('profiles') as any).insert({
-            id: authData.user.id,
-            full_name: fullName,
-            slug: generatedSlug,
-            phone_whatsapp: phone,
-            role: 'technician',
-            city: 'Tuxtla Gutiérrez',
-            state: 'Chiapas',
-          });
-          
-          if (profileError) {
-            // Clean up auth user if profile creation fails? For now just throw.
-            throw new Error('No se pudo crear el perfil público (Error de seguridad). Verifica que ejecutaste el script SQL.');
-          }
-        }
+        // Ya no insertamos manualmente, el Trigger de Base de Datos lo hará por nosotros
 
         router.push('/portal/dashboard');
       } else {

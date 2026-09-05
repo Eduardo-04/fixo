@@ -1,11 +1,47 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import QRCodeCard from '@/components/technician/QRCodeCard';
-import { MOCK_TECHNICIANS } from '@/lib/mock-data';
-import { Printer, Smartphone, Share2, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 export default function MyQRCodePage() {
-  const tech = MOCK_TECHNICIANS[0];
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Cargar perfil, categoría y trabajos realizados
+        const { data } = await supabase
+          .from('profiles')
+          .select('*, technician_categories(categories(name)), portfolio_items(id)')
+          .eq('id', user.id)
+          .single();
+          
+        if (data) {
+          setProfile(data);
+        }
+      }
+      setLoading(false);
+    }
+    
+    loadProfile();
+  }, []);
+
+  if (loading) {
+    return <div className="p-8 text-center text-slate-500 font-medium">Cargando tarjeta digital...</div>;
+  }
+
+  if (!profile) {
+    return <div className="p-8 text-center text-red-500 font-medium">No se encontró información del perfil. Por favor, asegúrate de haber guardado tus datos en la pestaña de Perfil.</div>;
+  }
+
+  // Extraer nombre de categoría (si tiene)
+  const categoryName = profile.technician_categories?.[0]?.categories?.name || 'Técnico Especialista';
 
   return (
     <div className="space-y-8 max-w-4xl">
@@ -22,12 +58,16 @@ export default function MyQRCodePage() {
         {/* Renderizador de Tarjeta QR */}
         <div>
           <QRCodeCard
-            slug={tech.slug}
-            technicianName={tech.full_name}
-            specialty={tech.categories?.[0]?.name || 'Técnico Especialista'}
-            phone={tech.phone_whatsapp}
-            emitsCfdi={tech.emits_cfdi}
-            isVerified={tech.verification_status === 'verified'}
+            slug={profile.slug}
+            technicianName={profile.full_name}
+            specialty={categoryName}
+            phone={profile.phone_whatsapp}
+            emitsCfdi={profile.emits_cfdi}
+            isVerified={profile.verification_status === 'verified'}
+            avatarUrl={profile.avatar_url}
+            rating={profile.rating_average || 5.0}
+            reviewsCount={profile.reviews_count || 0}
+            jobsCount={profile.portfolio_items?.length || 0}
           />
         </div>
 

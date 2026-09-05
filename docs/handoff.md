@@ -1,38 +1,35 @@
 # Fixo - Handoff / Contexto Actual
 
-Este documento resume los avances más recientes para que puedas continuar trabajando sin problemas desde tu laptop. (La información sensible ha sido omitida por seguridad).
+Este documento resume los avances más recientes para que puedas continuar trabajando sin problemas.
 
-## 🚀 Logros y Cambios Implementados
+## 🚀 Logros y Cambios Implementados (Sesión Actual)
 
-### 1. Panel de Administración de Banners (`/admin/banners`)
-- Se conectó el panel de control directamente a la base de datos **Supabase**.
-- Se implementó la capacidad de **editar anuncios reales**, permitiendo actualizar la imagen o el enlace.
-- Al editar un anuncio, **se protegen** los datos de clics e impresiones (no se reinician).
-- Se agregó el botón de **Pausar/Activar** anuncios para gestionar campañas sin tener que borrarlas de la base de datos.
-- Se generaron políticas RLS (Row Level Security) temporales (`00002_fix_rls.sql`) para permitir el CRUD de banners sin estar autenticado como super-admin todavía.
+### 1. Autenticación y Cuentas de Técnicos
+- **Trigger Automático:** Se creó el trigger de base de datos (`20240106_auth_trigger.sql`) que auto-genera el registro en la tabla `profiles` cada que un nuevo usuario se registra en `auth.users`, eliminando para siempre el error de "Perfil Incompleto".
+- **Auto-reparación:** El dashboard de técnicos (`/portal/dashboard`) detecta si un usuario no tiene perfil por errores antiguos y lo genera automáticamente.
 
-### 2. Mejoras de UI / Diseño (Responsive)
-- **Barra de Navegación (Header):** Se optimizó para dispositivos móviles. Ahora los botones secundarios ocultan el texto y solo muestran sus iconos para evitar que el diseño se rompa o sature la pantalla en celulares pequeños.
-- **Botón de Donación:** Se cambió a Mercado Pago para mejorar la conversión en México e integrarse mejor con el público local.
-- **Anuncios Modales (Banners):**
-  - Se rediseñó la ventana emergente con estilo *glassmorphism* (fondos oscuros, sombras dinámicas).
-  - La imagen del patrocinador ya **no se recorta**. Se utiliza `object-contain` con altura dinámica para mostrar la imagen al 100% integrándola visualmente con el fondo.
-- **Buscador (Selectores):** Se ajustó el espaciado (padding) para que el texto de las ciudades/categorías no choque con la flechita nativa del menú desplegable.
+### 2. Panel de Administración Completo (`/admin`)
+- **Datos Reales:** El dashboard principal ahora lee y muestra métricas reales directo desde Supabase (Técnicos totales, INEs aprobados, Clics, etc.).
+- **Aprobación de Identidad (INE):** 
+  - Las fotos de INE se suben a un **bucket privado (`private-docs`)**.
+  - En el panel de revisión (`/admin/verificaciones`) se añadió un **visor de imagen a pantalla completa (Zoom)** para leer fácilmente los datos de las identificaciones.
+  - El estado de la verificación de cada técnico (`unverified`, `pending`, `verified`, `rejected`) se sincroniza en tiempo real, guardándose en base de datos.
+- **Sistema de Anuncios Globales (`/admin/anuncios`):**
+  - Nueva función para redactar y publicar anuncios que aparecen en el portal de cada técnico.
+  - Migración añadida: `20240107_system_announcements.sql` para soportar distintos tipos de alertas (Info, Success, Warning, Ad).
+  - El dashboard del técnico fue modificado para renderizar este banner global si está activo.
 
-### 3. Autenticación Real de Técnicos (Supabase Auth)
-- **Eliminación del Mock Data:** Se eliminó el "bypass" (el usuario simulado Carlos Morales).
-- **Registro Real:** Ahora los técnicos se registran con correo y contraseña. Sus datos van directamente a `auth.users` de Supabase.
-- **Trigger de Perfiles:** Se creó la política de seguridad RLS (`00003_auth_rls.sql`) para que, al registrarse, la aplicación web pueda guardar automáticamente el nombre y datos iniciales en la tabla pública `profiles`.
-- **Dashboard Protegido:** El `/portal/dashboard` ahora valida la sesión del usuario real contra el servidor (`page.tsx` y `layout.tsx`).
-- **Manejo de Errores Robustecido:** Si el RLS falla o el perfil queda "incompleto", el sistema ya no entra en un "bucle infinito de redirecciones", sino que muestra un mensaje de error claro solicitándole al técnico que cree una cuenta nueva.
+### 3. Página Secreta de Apoyo Financiero (`/apoyanos`)
+- Se diseñó una landing page exclusiva y escondida con un diseño *premium dark-mode* con lluvia interactiva de iconos de herramientas.
+- Esta página se usa para que los usuarios o técnicos puedan realizar donaciones voluntarias vía Mercado Pago (café, servidores o contribución gigante).
 
-## ⚠️ Pasos pendientes para la nueva sesión (Laptop)
+## ⚠️ Pasos pendientes y Recordatorios de Infraestructura
 
-1. Recuerda hacer `git pull` en la rama `develop` al abrir tu laptop.
-2. Si tu base de datos Supabase en tu laptop está limpia, recuerda ejecutar los tres scripts en orden:
-   - `00001_initial_schema.sql`
-   - `00002_fix_rls.sql`
-   - `00003_auth_rls.sql`
-3. Lo siguiente en la lista (que dejamos en pausa) era empezar con la **Insignia Visual de Destacado (PRO) 🔥** para las tarjetas de los técnicos.
+1. **Migraciones SQL Críticas:** Es vital asegurarse de que todas las migraciones nuevas estén corridas en el panel web de Supabase:
+   - `20240103_create_storage.sql` (Si aún no se corrió)
+   - `20240105_admin_policies.sql` (Crea bucket privado y accesos)
+   - `20240106_auth_trigger.sql` (Trigger de auto-perfil)
+   - `20240107_system_announcements.sql` (Tabla de banners globales)
+2. **Lo siguiente en la lista** (si se retoma) es empezar con la **Insignia Visual de Destacado (PRO) 🔥** para las tarjetas de los técnicos.
 
 ¡Éxito con el cambio de equipo!

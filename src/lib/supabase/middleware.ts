@@ -65,6 +65,13 @@ export async function updateSession(request: NextRequest) {
     const path = request.nextUrl.pathname;
 
     if (!isMockEnv) {
+      // Si ya hay usuario, no dejarlo entrar a la vista de login
+      if (path === '/portal/login' && user) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/portal/dashboard';
+        return NextResponse.redirect(url);
+      }
+
       // Rutas protegidas del técnico
       if (path.startsWith('/portal/dashboard') && !user) {
         const url = request.nextUrl.clone();
@@ -74,11 +81,27 @@ export async function updateSession(request: NextRequest) {
       }
 
       // Rutas protegidas del administrador
-      if (path.startsWith('/admin') && !user) {
-        const url = request.nextUrl.clone();
-        url.pathname = '/portal/login';
-        url.searchParams.set('redirectedFrom', path);
-        return NextResponse.redirect(url);
+      if (path.startsWith('/admin')) {
+        if (!user) {
+          const url = request.nextUrl.clone();
+          url.pathname = '/portal/login';
+          url.searchParams.set('redirectedFrom', path);
+          return NextResponse.redirect(url);
+        }
+
+        // Consultar el rol del usuario en la tabla profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.role !== 'admin') {
+          // Si no es admin, redirigir al dashboard público o de técnico
+          const url = request.nextUrl.clone();
+          url.pathname = '/portal/dashboard';
+          return NextResponse.redirect(url);
+        }
       }
     }
   } catch (err) {

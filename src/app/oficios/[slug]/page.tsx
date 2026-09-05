@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { MOCK_CATEGORIES, MOCK_TECHNICIANS } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/server';
 import TechnicianCard from '@/components/directory/TechnicianCard';
 import SponsorBanner from '@/components/shared/SponsorBanner';
 import SearchBar from '@/components/directory/SearchBar';
@@ -20,7 +20,13 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     };
   }
 
-  const category = MOCK_CATEGORIES.find((c) => c.slug === params.slug);
+  const supabase = createClient();
+  const { data: category } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('slug', params.slug)
+    .single();
+
   if (!category) return { title: 'Oficio no encontrado | Fixo' };
 
   return {
@@ -29,59 +35,86 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   };
 }
 
-export default function CategoryDirectoryPage({ params, searchParams }: CategoryPageProps) {
+export default async function CategoryDirectoryPage({ params, searchParams }: CategoryPageProps) {
   const isAll = params.slug === 'todos';
-  const category = isAll ? null : MOCK_CATEGORIES.find((c) => c.slug === params.slug);
-
-  if (!isAll && !category) {
-    notFound();
+  const supabase = createClient();
+  
+  // 1. Obtener información de la categoría actual
+  let category = null;
+  if (!isAll) {
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('slug', params.slug)
+      .single();
+    
+    if (!cat) notFound();
+    category = cat;
   }
 
-  // Filtrado de técnicos
-  let filtered = MOCK_TECHNICIANS.filter((t) => {
-    // Categoría
-    if (!isAll && category) {
-      const hasCategory = t.categories?.some((c) => c.slug === category.slug);
-      if (!hasCategory) return false;
-    }
+  // 2. Construir la consulta a Supabase
+  // Traemos perfiles con su categoría asociada
+  let query = supabase
+    .from('profiles')
+    .select(`
+      *,
+      technician_categories!inner(
+        categories(id, name, slug)
+      )
+    `)
+    .eq('role', 'technician');
 
-    // Filtro por término
+  // Filtro de categoría
+  if (!isAll && category) {
+    query = query.eq('technician_categories.categories.slug', category.slug);
+  }
+
+  // Filtros de UI
+  if (searchParams.estado && searchParams.estado !== 'Todos los estados') {
+    query = query.ilike('state', searchParams.estado);
+  }
+  
+  if (searchParams.ciudad && searchParams.ciudad !== 'Todas las ciudades') {
+    query = query.ilike('city', searchParams.ciudad);
+  }
+  
+  if (searchParams.cfdi === 'true') {
+    query = query.eq('emits_cfdi', true);
+  }
+
+  // Ejecutar query
+  const { data: profilesData } = await query;
+  
+  // 3. Post-procesamiento y Filtro de Búsqueda (Texto)
+  let filtered = [];
+  
+  if (profilesData) {
+    // Mapear la respuesta al formato que espera TechnicianCard
+    filtered = profilesData.map((p: any) => ({
+      ...p,
+      categories: p.technician_categories?.map((tc: any) => tc.categories) || [],
+    }));
+
+    // Búsqueda por palabra clave (nombre, bio, categoría)
     if (searchParams.q) {
       const q = searchParams.q.toLowerCase();
-      const matchName = t.full_name.toLowerCase().includes(q);
-      const matchBio = t.bio?.toLowerCase().includes(q);
-      const matchCat = t.categories?.some((c) => c.name.toLowerCase().includes(q));
-      if (!matchName && !matchBio && !matchCat) return false;
+      filtered = filtered.filter((t: any) => {
+        const matchName = t.full_name?.toLowerCase().includes(q);
+        const matchBio = t.bio?.toLowerCase().includes(q);
+        const matchCat = t.categories?.some((c: any) => c.name?.toLowerCase().includes(q));
+        return matchName || matchBio || matchCat;
+      });
     }
 
-    // Filtro por estado
-    if (searchParams.estado && searchParams.estado !== 'Todos los estados') {
-      const hasState = t.state?.toLowerCase() === searchParams.estado?.toLowerCase();
-      if (!hasState) return false;
-    }
-
-    // Filtro por ciudad
-    if (searchParams.ciudad && searchParams.ciudad !== 'Todas las ciudades') {
-      const hasCity = t.city?.toLowerCase() === searchParams.ciudad?.toLowerCase();
-      if (!hasCity) return false;
-    }
-
-    // Filtro por CFDI
-    if (searchParams.cfdi === 'true' && !t.emits_cfdi) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // Ordenamiento prioritario: is_pro -> verified -> views
-  filtered.sort((a, b) => {
-    if (a.is_pro && !b.is_pro) return -1;
-    if (!a.is_pro && b.is_pro) return 1;
-    if (a.verification_status === 'verified' && b.verification_status !== 'verified') return -1;
-    if (a.verification_status !== 'verified' && b.verification_status === 'verified') return 1;
-    return b.views_count - a.views_count;
-  });
+    // Ordenamiento prioritario: is_pro -> verified -> views
+    filtered.sort((a: any, b: any) => {
+      if (a.is_pro && !b.is_pro) return -1;
+      if (!a.is_pro && b.is_pro) return 1;
+      if (a.verification_status === 'verified' && b.verification_status !== 'verified') return -1;
+      if (a.verification_status !== 'verified' && b.verification_status === 'verified') return 1;
+      return (b.views_count || 0) - (a.views_count || 0);
+    });
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
@@ -128,7 +161,7 @@ export default function CategoryDirectoryPage({ params, searchParams }: Category
       {/* Lista de Técnicos */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((tech) => (
+          {filtered.map((tech: any) => (
             <TechnicianCard key={tech.id} technician={tech} />
           ))}
         </div>

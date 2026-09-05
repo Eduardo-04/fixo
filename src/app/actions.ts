@@ -70,12 +70,15 @@ export async function updateTechnicianProfile(formData: FormData) {
   const bio = formData.get('bio') as string;
   const experienceYears = parseInt(formData.get('experienceYears') as string, 10) || 1;
   const emitsCfdi = formData.get('emitsCfdi') === 'true';
+  const avatarUrl = formData.get('avatarUrl') as string | null;
+  const categoryId = formData.get('categoryId') as string | null;
   const neighborhoods = (formData.get('neighborhoods') as string || '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
 
   if (user) {
+    // 1. Actualizar perfil
     const { error } = await (supabase.from('profiles') as any)
       .update({
         full_name: fullName,
@@ -84,6 +87,7 @@ export async function updateTechnicianProfile(formData: FormData) {
         experience_years: experienceYears,
         emits_cfdi: emitsCfdi,
         neighborhoods_covered: neighborhoods,
+        ...(avatarUrl && { avatar_url: avatarUrl }), // Solo si se envió
         updated_at: new Date().toISOString(),
       })
       .eq('id', user.id);
@@ -91,10 +95,22 @@ export async function updateTechnicianProfile(formData: FormData) {
     if (error) {
       return { success: false, error: error.message };
     }
+
+    // 2. Actualizar categoría si se envió
+    if (categoryId) {
+      // Eliminar categorías anteriores
+      await supabase.from('technician_categories').delete().eq('profile_id', user.id);
+      // Insertar nueva
+      await supabase.from('technician_categories').insert({
+        profile_id: user.id,
+        category_id: parseInt(categoryId, 10)
+      });
+    }
   }
 
   revalidatePath('/portal/dashboard');
   revalidatePath('/portal/dashboard/perfil');
+  revalidatePath('/portal/dashboard/mi-qr');
   return { success: true };
 }
 

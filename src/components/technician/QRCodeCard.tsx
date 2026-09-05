@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Download, Share2, Printer, Check, QrCode, Star } from 'lucide-react';
-import { useState } from 'react';
+import { Download, Share2, Printer, Check, QrCode, Star, Briefcase, User } from 'lucide-react';
+import Image from 'next/image';
 
 interface QRCodeCardProps {
   slug: string;
@@ -14,6 +14,8 @@ interface QRCodeCardProps {
   isVerified?: boolean;
   rating?: number;
   reviewsCount?: number;
+  jobsCount?: number;
+  avatarUrl?: string | null;
 }
 
 export default function QRCodeCard({
@@ -23,8 +25,10 @@ export default function QRCodeCard({
   phone,
   emitsCfdi = false,
   isVerified = false,
-  rating = 0,
+  rating = 5.0,
   reviewsCount = 0,
+  jobsCount = 0,
+  avatarUrl = null,
 }: QRCodeCardProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -34,7 +38,7 @@ export default function QRCodeCard({
   const profileUrl = `${baseUrl}/t/${slug}`;
 
   // Descarga del canvas como imagen PNG
-  const handleDownloadQR = () => {
+  const handleDownloadQR = async () => {
     const canvas = canvasRef.current?.querySelector('canvas');
     if (!canvas) return;
 
@@ -45,11 +49,11 @@ export default function QRCodeCard({
 
     // Dimensiones de tarjeta de bolsillo (800 x 1200 px para alta definición)
     compositeCanvas.width = 800;
-    compositeCanvas.height = 1100;
+    compositeCanvas.height = 1200;
 
     // Fondo
     ctx.fillStyle = '#0F172A'; // Slate 900
-    ctx.fillRect(0, 0, 800, 1100);
+    ctx.fillRect(0, 0, 800, 1200);
 
     // Cabecera Fixo
     ctx.fillStyle = '#EA580C'; // Primary Amber
@@ -74,30 +78,38 @@ export default function QRCodeCard({
     // Dibujar el QR en el centro
     ctx.drawImage(canvas, 150, 240, 500, 500);
 
+    // Intentar dibujar el Avatar (CORS puede bloquear esto, así que lo envolvemos en try/catch o imagen pre-cargada)
+    let currentY = 850;
+    
     // Datos del Técnico
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 36px system-ui, sans-serif';
-    ctx.fillText(technicianName, 400, 850);
+    ctx.fillText(technicianName, 400, currentY);
 
+    currentY += 50;
     ctx.fillStyle = '#EA580C';
     ctx.font = '600 28px system-ui, sans-serif';
-    ctx.fillText(specialty, 400, 900);
+    ctx.fillText(specialty, 400, currentY);
 
+    currentY += 50;
     ctx.fillStyle = '#38BDF8';
     ctx.font = 'bold 26px system-ui, sans-serif';
-    ctx.fillText(`WhatsApp: ${phone}`, 400, 950);
+    ctx.fillText(`WhatsApp: ${phone}`, 400, currentY);
 
-    // Dibujar Calificación si existe
+    // Dibujar Calificación y Trabajos
+    currentY += 60;
     if (rating > 0) {
       ctx.fillStyle = '#FBBF24'; // amber-400
-      ctx.font = 'bold 28px system-ui, sans-serif';
-      ctx.fillText(`★ ${rating.toFixed(1)} (${reviewsCount} reseñas)`, 400, 1000);
+      ctx.font = 'bold 26px system-ui, sans-serif';
+      const statsText = `★ ${rating.toFixed(1)} (${reviewsCount} reseñas)   •   ${jobsCount} trabajos realizados`;
+      ctx.fillText(statsText, 400, currentY);
     }
 
     // Pie con llamado a la acción
+    currentY += 100;
     ctx.fillStyle = '#10B981';
     ctx.font = '600 22px system-ui, sans-serif';
-    ctx.fillText('✓ Escanea con tu celular para ver mis trabajos y contactarme', 400, 1050);
+    ctx.fillText('✓ Escanea con tu celular para ver mis trabajos y contactarme', 400, currentY);
 
     const link = document.createElement('a');
     link.download = `Fixo-Tarjeta-QR-${slug}.png`;
@@ -154,14 +166,37 @@ export default function QRCodeCard({
           />
         </div>
 
-        {/* Reputación del Técnico */}
-        {rating > 0 && (
-          <div className="flex items-center gap-1.5 bg-slate-800/50 border border-slate-700 px-4 py-2 rounded-full mb-4">
-            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span className="text-sm font-bold text-white">{rating.toFixed(1)}</span>
-            <span className="text-xs text-slate-400">({reviewsCount} reseñas verificadas)</span>
+        {/* Perfil Miniatura */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-800 border-2 border-slate-700">
+            {avatarUrl ? (
+              <Image src={avatarUrl} alt={technicianName} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <User className="w-6 h-6 text-slate-400" />
+              </div>
+            )}
           </div>
-        )}
+          <div className="flex flex-col">
+            <span className="font-bold text-lg">{technicianName}</span>
+            <span className="text-brand-primary text-xs font-semibold">{specialty}</span>
+          </div>
+        </div>
+
+        {/* Reputación del Técnico */}
+        <div className="flex flex-wrap justify-center items-center gap-2 mb-4">
+          <div className="flex items-center gap-1.5 bg-slate-800/50 border border-slate-700 px-3 py-1.5 rounded-full">
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <span className="text-xs font-bold text-white">{rating.toFixed(1)}</span>
+            <span className="text-[10px] text-slate-400">({reviewsCount} reseñas)</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-slate-800/50 border border-slate-700 px-3 py-1.5 rounded-full">
+            <Briefcase className="w-4 h-4 text-brand-primary" />
+            <span className="text-xs font-bold text-white">{jobsCount}</span>
+            <span className="text-[10px] text-slate-400">trabajos</span>
+          </div>
+        </div>
 
         <p className="text-xs text-slate-300 font-medium text-center mb-6 max-w-xs">
           Escanea aquí para ver mi portafolio verificado, cobertura y contactarme al instante.

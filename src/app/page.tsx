@@ -20,6 +20,7 @@ export default async function HomePage() {
   const { data: featuredTechnicians = [] } = await supabase
     .from('profiles')
     .select('*')
+    .eq('role', 'technician')
     .order('boost_expires_at', { ascending: false, nullsFirst: false })
     .order('is_pro', { ascending: false })
     .order('verification_status', { ascending: false })

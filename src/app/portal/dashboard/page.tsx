@@ -17,24 +17,86 @@ export default async function DashboardSummaryPage() {
     .eq('id', user.id)
     .single();
 
+  const { data: announcements } = await supabase
+    .from('system_announcements')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(1);
+    
+  const activeAnnouncement = announcements?.[0];
+
   if (!tech) {
-    return (
-      <div className="p-8 text-center space-y-4">
-        <h2 className="text-xl font-bold text-red-600">Error de Perfil Incompleto</h2>
-        <p className="text-slate-600">
-          Tu cuenta existe en el sistema, pero no se pudo crear tu "Ficha Pública de Técnico" por un problema de seguridad en la base de datos que ya fue solucionado.
-        </p>
-        <p className="text-slate-600 font-semibold">
-          Para solucionar esto, por favor crea una cuenta nueva utilizando otro correo electrónico (ej. agregando un número).
-        </p>
-      </div>
-    );
+    // Si la cuenta existe en auth pero no en profiles (ej. cuentas viejas fallidas), lo auto-creamos:
+    const userMeta = user.user_metadata || {};
+    const fallbackName = userMeta.full_name || 'Técnico ' + user.id.substring(0, 6);
+    const fallbackSlug = fallbackName.toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + Math.floor(1000 + Math.random() * 9000);
+
+    const { error: insertError } = await supabase.from('profiles').insert({
+      id: user.id,
+      full_name: fallbackName,
+      slug: fallbackSlug,
+      phone_whatsapp: userMeta.phone || '0000000000',
+      role: 'technician',
+      city: 'Tuxtla Gutiérrez',
+      state: 'Chiapas',
+    });
+
+    if (insertError) {
+      return (
+        <div className="p-8 text-center space-y-4">
+          <h2 className="text-xl font-bold text-red-600">Error Crítico al Recuperar Perfil</h2>
+          <p className="text-slate-600">
+            No se pudo reparar tu cuenta de forma automática ({insertError.message}).
+          </p>
+        </div>
+      );
+    }
+    
+    // Recargar la página para mostrar el dashboard con el perfil recién creado
+    redirect('/portal/dashboard');
   }
 
   const conversionRate = ((tech.whatsapp_clicks / (tech.views_count || 1)) * 100).toFixed(1);
 
   return (
     <div className="space-y-8">
+      {/* Sistema de Anuncios Globales */}
+      {activeAnnouncement && (
+        <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm ${
+          activeAnnouncement.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-900' :
+          activeAnnouncement.type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-900' :
+          activeAnnouncement.type === 'ad' ? 'bg-purple-50 border-purple-200 text-purple-900' :
+          'bg-blue-50 border-blue-200 text-blue-900'
+        }`}>
+          <div>
+            <h3 className="text-sm font-bold flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full animate-pulse ${
+                activeAnnouncement.type === 'success' ? 'bg-emerald-500' :
+                activeAnnouncement.type === 'warning' ? 'bg-amber-500' :
+                activeAnnouncement.type === 'ad' ? 'bg-purple-500' :
+                'bg-blue-500'
+              }`}></span>
+              {activeAnnouncement.title}
+            </h3>
+            <p className="text-xs mt-1 opacity-90">{activeAnnouncement.message}</p>
+          </div>
+          {activeAnnouncement.link_url && (
+            <Link 
+              href={activeAnnouncement.link_url}
+              className={`shrink-0 text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-sm ${
+                activeAnnouncement.type === 'success' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' :
+                activeAnnouncement.type === 'warning' ? 'bg-amber-600 hover:bg-amber-700 text-white' :
+                activeAnnouncement.type === 'ad' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
+                'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {activeAnnouncement.link_text || 'Ver más'}
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Saludo y Estado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
         <div className="space-y-1">

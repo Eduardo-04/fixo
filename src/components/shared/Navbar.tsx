@@ -1,8 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShieldCheck, User, PlusCircle, Search } from 'lucide-react';
+import { ShieldCheck, User, PlusCircle, Search, LayoutDashboard } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
 
-export default function Navbar() {
+export default async function Navbar() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <header className="sticky top-0 z-50 bg-brand-base border-b border-slate-800 text-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,23 +46,36 @@ export default function Navbar() {
               <span className="hidden sm:inline">Directorio de Oficios</span>
             </Link>
 
-            <Link
-              href="/portal/login"
-              className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white px-2 sm:px-3 py-2 rounded-lg hover:bg-slate-800/60 transition-colors"
-              title="Soy Técnico"
-            >
-              <User className="w-5 h-5 sm:w-3.5 sm:h-3.5 text-brand-accent" />
-              <span className="hidden sm:inline">Soy Técnico</span>
-            </Link>
+            {user ? (
+              <Link
+                href="/portal/dashboard"
+                className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-white bg-slate-800 hover:bg-slate-700 px-3 sm:px-3.5 py-2 rounded-lg shadow-sm border border-slate-700 transition-all ml-1 sm:ml-0"
+              >
+                <LayoutDashboard className="w-4 h-4 shrink-0 text-brand-primary" />
+                <span className="hidden sm:inline">Mi Panel</span>
+                <span className="sm:hidden">Panel</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/portal/login"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white px-2 sm:px-3 py-2 rounded-lg hover:bg-slate-800/60 transition-colors"
+                  title="Soy Técnico"
+                >
+                  <User className="w-5 h-5 sm:w-3.5 sm:h-3.5 text-brand-accent" />
+                  <span className="hidden sm:inline">Soy Técnico</span>
+                </Link>
 
-            <Link
-              href="/portal/login?mode=register"
-              className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-white bg-brand-primary hover:bg-brand-primary-hover px-3 sm:px-3.5 py-2 rounded-lg shadow-sm hover:shadow-brand-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all ml-1 sm:ml-0"
-            >
-              <PlusCircle className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">Anunciar mi Oficio</span>
-              <span className="sm:hidden">Publicar</span>
-            </Link>
+                <Link
+                  href="/portal/login?mode=register"
+                  className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-white bg-brand-primary hover:bg-brand-primary-hover px-3 sm:px-3.5 py-2 rounded-lg shadow-sm hover:shadow-brand-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all ml-1 sm:ml-0"
+                >
+                  <PlusCircle className="w-4 h-4 shrink-0" />
+                  <span className="hidden sm:inline">Anunciar mi Oficio</span>
+                  <span className="sm:hidden">Publicar</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { ShieldCheck, Check, X, Eye, FileText, User } from 'lucide-react';
-
+import { useState, useEffect } from 'react';
+import { ShieldCheck, Check, X, Eye, FileText, User, Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import { approveOrRejectVerification } from '@/app/actions';
 
 interface PendingDoc {
-  id: string;
   profileId: string;
   technicianName: string;
   trade: string;
@@ -14,44 +13,78 @@ interface PendingDoc {
   frontUrl: string;
   backUrl: string;
   phone: string;
+  frontId: string;
+  backId: string;
 }
 
-const INITIAL_PENDING: PendingDoc[] = [
-  {
-    id: 'doc-1',
-    profileId: 'f1a23b45-3333-4000-8000-000000000003',
-    technicianName: 'Manuel Alejandro Ruiz',
-    trade: 'Electricidad Residencial',
-    submittedAt: 'Hoy a las 10:30 AM',
-    frontUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
-    backUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=600&q=80',
-    phone: '+529615551234',
-  },
-  {
-    id: 'doc-2',
-    profileId: 'f1a23b45-4444-4000-8000-000000000004',
-    technicianName: 'Armando Castillejos Díaz',
-    trade: 'Carpintería de Cedro',
-    submittedAt: 'Ayer a las 04:15 PM',
-    frontUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
-    backUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=600&q=80',
-    phone: '+529613334455',
-  },
-];
-
 export default function AdminVerificationsPage() {
-  const [list, setList] = useState<PendingDoc[]>(INITIAL_PENDING);
+  const [list, setList] = useState<PendingDoc[]>([]);
+  const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadPending() {
+      const supabase = createClient();
+      
+      // Consultar perfiles que están en pending, y sus documentos
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select(`
+          id, full_name, phone_whatsapp, created_at,
+          technician_categories(categories(name)),
+          verification_documents(*)
+        `)
+        .eq('verification_status', 'pending');
+
+      if (profiles) {
+        const mappedList: PendingDoc[] = [];
+        
+        profiles.forEach((p: any) => {
+          const docs = p.verification_documents || [];
+          const frontDoc = docs.find((d: any) => d.document_type === 'ine_front');
+          const backDoc = docs.find((d: any) => d.document_type === 'ine_back');
+          
+          if (frontDoc && backDoc) {
+            mappedList.push({
+              profileId: p.id,
+              technicianName: p.full_name,
+              trade: p.technician_categories?.[0]?.categories?.name || 'Servicios',
+              phone: p.phone_whatsapp,
+              submittedAt: new Date(frontDoc.created_at).toLocaleString(),
+              frontUrl: frontDoc.document_url,
+              backUrl: backDoc.document_url,
+              frontId: frontDoc.id,
+              backId: backDoc.id
+            });
+          }
+        });
+        
+        setList(mappedList);
+      }
+      setLoading(false);
+    }
+    loadPending();
+  }, []);
 
   const handleAction = async (item: PendingDoc, action: 'approved' | 'rejected') => {
     const newStatus = action === 'approved' ? 'verified' : 'rejected';
-    await approveOrRejectVerification(item.id, item.profileId, newStatus);
-    setList((prev) => prev.filter((doc) => doc.id !== item.id));
+    
+    // Necesitamos llamar a la accion por ambos docs, o podemos hacer que la accion actualice todo por profile_id
+    // pero por ahora actualizamos ambos y el profile
+    await approveOrRejectVerification(item.frontId, item.profileId, newStatus);
+    await approveOrRejectVerification(item.backId, item.profileId, newStatus);
+    
+    setList((prev) => prev.filter((doc) => doc.profileId !== item.profileId));
     setFeedback(action === 'approved' 
       ? `✓ ¡Credencial de ${item.technicianName} aprobada! La insignia verde ya está visible en su perfil.`
       : `✕ Se rechazó la verificación de ${item.technicianName}.`);
     setTimeout(() => setFeedback(null), 4000);
   };
+
+  if (loading) {
+    return <div className="p-12 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-brand-primary" /></div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -83,7 +116,7 @@ export default function AdminVerificationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {list.map((item) => (
             <div
-              key={item.id}
+              key={item.profileId}
               className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4 flex flex-col justify-between"
             >
               <div className="space-y-3">
@@ -102,13 +135,19 @@ export default function AdminVerificationsPage() {
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">Frente INE</span>
-                    <div className="h-28 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                    <div 
+                      className="h-28 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 cursor-zoom-in hover:opacity-80 transition-opacity"
+                      onClick={() => setSelectedImage(item.frontUrl)}
+                    >
                       <img src={item.frontUrl} alt="INE Frente" className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">Reverso INE</span>
-                    <div className="h-28 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                    <div 
+                      className="h-28 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 cursor-zoom-in hover:opacity-80 transition-opacity"
+                      onClick={() => setSelectedImage(item.backUrl)}
+                    >
                       <img src={item.backUrl} alt="INE Reverso" className="w-full h-full object-cover" />
                     </div>
                   </div>
@@ -154,6 +193,28 @@ export default function AdminVerificationsPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal de Visor de Imagen */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm cursor-zoom-out"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-12 right-0 text-white hover:text-red-400 flex items-center gap-2 font-bold text-sm"
+            >
+              Cerrar <X className="w-5 h-5" />
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Vista Expandida" 
+              className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" 
+            />
+          </div>
         </div>
       )}
     </div>

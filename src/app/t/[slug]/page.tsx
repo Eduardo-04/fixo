@@ -13,7 +13,7 @@ import {
   Sparkles,
   Star,
 } from 'lucide-react';
-import { MOCK_TECHNICIANS } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/server';
 import WhatsAppButton from '@/components/shared/WhatsAppButton';
 import ProfileActions from '@/components/technician/ProfileActions';
 import QRCodeCard from '@/components/technician/QRCodeCard';
@@ -25,24 +25,45 @@ interface TechnicianProfileProps {
 }
 
 export async function generateMetadata({ params }: TechnicianProfileProps): Promise<Metadata> {
-  const tech = MOCK_TECHNICIANS.find((t) => t.slug === params.slug);
+  const supabase = createClient();
+  const { data: tech } = await supabase
+    .from('profiles')
+    .select('*, technician_categories(categories(name))')
+    .eq('slug', params.slug)
+    .eq('role', 'technician')
+    .single();
+
   if (!tech) return { title: 'Técnico no encontrado | Fixo' };
 
-  const categoryNames = tech.categories?.map((c) => c.name).join(', ') || 'Servicios Técnicos';
+  const categoryNames = tech.technician_categories?.map((tc: any) => tc.categories.name).join(', ') || 'Servicios Técnicos';
 
   return {
     title: `${tech.full_name} - ${categoryNames} en Tuxtla Gutiérrez | Fixo`,
     description: `${tech.bio || 'Técnico verificado en Tuxtla Gutiérrez.'} Contacta directo por WhatsApp o escanea su tarjeta digital QR.`,
     openGraph: {
       title: `${tech.full_name} | ${categoryNames} en Fixo`,
-      description: `Especialista con ${tech.experience_years} años de experiencia en Tuxtla Gutiérrez. Cotiza por WhatsApp.`,
+      description: `Especialista con ${tech.experience_years || 1} años de experiencia en Tuxtla Gutiérrez. Cotiza por WhatsApp.`,
       images: tech.avatar_url ? [{ url: tech.avatar_url }] : [],
     },
   };
 }
 
 export default async function TechnicianPublicProfile({ params }: TechnicianProfileProps) {
-  const tech = MOCK_TECHNICIANS.find((t) => t.slug === params.slug);
+  const supabase = createClient();
+
+  // Fetch complete profile with categories and portfolio items
+  const { data: tech } = await supabase
+    .from('profiles')
+    .select(`
+      *,
+      technician_categories(
+        categories(name)
+      ),
+      portfolio_items(*)
+    `)
+    .eq('slug', params.slug)
+    .eq('role', 'technician')
+    .single();
 
   if (!tech) {
     notFound();
@@ -52,7 +73,7 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
   await trackProfileView(tech.slug);
 
   const isVerified = tech.verification_status === 'verified';
-  const categoryNames = tech.categories?.map((c) => c.name).join(' • ') || 'Servicios Técnicos';
+  const categoryNames = tech.technician_categories?.map((tc: any) => tc.categories?.name).join(' • ') || 'Servicios Técnicos';
 
   return (
     <div className="bg-slate-50 min-h-screen pb-24">
@@ -137,7 +158,7 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
                 <div className="flex items-center text-amber-400">
                   <Star className="w-5 h-5 fill-current" />
                 </div>
-                <span className="text-lg font-black text-slate-900">{tech.rating?.toFixed(1) || '0.0'}</span>
+                <span className="text-lg font-black text-slate-900">{tech.rating_average?.toFixed(1) || '5.0'}</span>
                 <span className="text-sm font-medium text-slate-500 underline decoration-slate-300 underline-offset-2 cursor-pointer hover:text-slate-700">
                   {tech.reviews_count || 0} reseñas verificadas
                 </span>
@@ -146,11 +167,11 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
               <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-2 border-t border-slate-100 mt-3">
                 <span className="flex items-center gap-1">
                   <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-                  <strong>{tech.experience_years} años</strong> de exp.
+                  <strong>{tech.experience_years || 1} años</strong> de exp.
                 </span>
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-brand-primary" />
-                  <span>{tech.city}, Chis.</span>
+                  <span>{tech.city || 'Tuxtla Gutiérrez'}, Chis.</span>
                 </span>
               </div>
             </div>
@@ -187,7 +208,7 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
                 Zonas y Colonias con Cobertura Inmediata
               </h3>
               <div className="flex flex-wrap gap-2">
-                {tech.neighborhoods_covered.map((col) => (
+                {tech.neighborhoods_covered.map((col: string) => (
                   <span
                     key={col}
                     className="inline-flex items-center gap-1 text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-lg border border-slate-200"
@@ -215,11 +236,11 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
                 </p>
               </div>
               <span className="text-xs font-semibold bg-orange-50 text-brand-primary px-2.5 py-1 rounded-lg border border-orange-200">
-                {tech.portfolio?.length || 0} fotos
+                {tech.portfolio_items?.length || 0} fotos
               </span>
             </div>
 
-            <PortfolioGrid items={tech.portfolio || []} />
+            <PortfolioGrid items={tech.portfolio_items || []} />
           </div>
 
           {/* Tarjeta Digital & QR Descargable (1 columna) */}
@@ -231,8 +252,10 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
               phone={tech.phone_whatsapp}
               emitsCfdi={tech.emits_cfdi}
               isVerified={isVerified}
-              rating={tech.rating}
+              avatarUrl={tech.avatar_url}
+              rating={tech.rating_average}
               reviewsCount={tech.reviews_count}
+              jobsCount={tech.portfolio_items?.length || 0}
             />
 
             {/* Garantía de Trato Directo */}
