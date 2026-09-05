@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { Download, Share2, Printer, Check, QrCode } from 'lucide-react';
+import { Download, Share2, Printer, Check, QrCode, Star } from 'lucide-react';
 import { useState } from 'react';
 
 interface QRCodeCardProps {
@@ -12,6 +12,8 @@ interface QRCodeCardProps {
   phone: string;
   emitsCfdi?: boolean;
   isVerified?: boolean;
+  rating?: number;
+  reviewsCount?: number;
 }
 
 export default function QRCodeCard({
@@ -21,6 +23,8 @@ export default function QRCodeCard({
   phone,
   emitsCfdi = false,
   isVerified = false,
+  rating = 0,
+  reviewsCount = 0,
 }: QRCodeCardProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
@@ -83,10 +87,17 @@ export default function QRCodeCard({
     ctx.font = 'bold 26px system-ui, sans-serif';
     ctx.fillText(`WhatsApp: ${phone}`, 400, 950);
 
+    // Dibujar Calificación si existe
+    if (rating > 0) {
+      ctx.fillStyle = '#FBBF24'; // amber-400
+      ctx.font = 'bold 28px system-ui, sans-serif';
+      ctx.fillText(`★ ${rating.toFixed(1)} (${reviewsCount} reseñas)`, 400, 1000);
+    }
+
     // Pie con llamado a la acción
     ctx.fillStyle = '#10B981';
     ctx.font = '600 22px system-ui, sans-serif';
-    ctx.fillText('✓ Escanea con tu celular para ver mis trabajos y contactarme', 400, 1020);
+    ctx.fillText('✓ Escanea con tu celular para ver mis trabajos y contactarme', 400, 1050);
 
     const link = document.createElement('a');
     link.download = `Fixo-Tarjeta-QR-${slug}.png`;
@@ -142,6 +153,15 @@ export default function QRCodeCard({
             }}
           />
         </div>
+
+        {/* Reputación del Técnico */}
+        {rating > 0 && (
+          <div className="flex items-center gap-1.5 bg-slate-800/50 border border-slate-700 px-4 py-2 rounded-full mb-4">
+            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <span className="text-sm font-bold text-white">{rating.toFixed(1)}</span>
+            <span className="text-xs text-slate-400">({reviewsCount} reseñas verificadas)</span>
+          </div>
+        )}
 
         <p className="text-xs text-slate-300 font-medium text-center mb-6 max-w-xs">
           Escanea aquí para ver mi portafolio verificado, cobertura y contactarme al instante.

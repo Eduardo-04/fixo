@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Wrench, ShieldCheck, User, PlusCircle, Search } from 'lucide-react';
+import Image from 'next/image';
+import { ShieldCheck, User, PlusCircle, Search } from 'lucide-react';
 
 export default function Navbar() {
   return (
@@ -8,8 +9,8 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo & Marca */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary to-amber-500 flex items-center justify-center shadow-lg shadow-brand-primary/30 group-hover:scale-105 transition-transform">
-              <Wrench className="w-5 h-5 text-white stroke-[2.5]" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shadow-md shadow-brand-primary/20 group-hover:scale-105 transition-transform bg-white">
+              <Image src="/logo.png" alt="Fixo Logo" width={40} height={40} className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">

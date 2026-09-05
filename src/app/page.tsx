@@ -4,6 +4,7 @@ import SearchBar from '@/components/directory/SearchBar';
 import CategoryCard from '@/components/directory/CategoryCard';
 import TechnicianCard from '@/components/directory/TechnicianCard';
 import SponsorBanner from '@/components/shared/SponsorBanner';
+import SponsorBannerGrid from '@/components/shared/SponsorBannerGrid';
 import { MOCK_CATEGORIES, MOCK_TECHNICIANS } from '@/lib/mock-data';
 
 export default function HomePage() {
@@ -90,6 +91,11 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* BANNER MIDDLE */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        <SponsorBanner placement="category_middle" />
+      </section>
+
       {/* 4. TÉCNICOS DESTACADOS (PRO & VERIFICADOS) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
@@ -174,6 +180,11 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* BANNER BOTTOM (GRID) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        <SponsorBannerGrid placement="home_bottom" />
       </section>
     </div>
   );

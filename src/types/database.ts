@@ -27,6 +27,8 @@ export interface Profile {
   pro_expires_at: string | null;
   views_count: number;
   whatsapp_clicks: number;
+  rating: number;
+  reviews_count: number;
   avatar_url: string | null;
   created_at: string;
   updated_at: string;
@@ -70,9 +72,11 @@ export interface VerificationDocument {
 export interface Banner {
   id: string;
   sponsor_name: string;
+  description: string | null;
   target_url: string;
   banner_image_url: string;
   placement: BannerPlacement;
+  aspect_ratio: 'horizontal' | 'vertical' | 'square';
   category_id: number | null;
   city: string;
   impressions: number;

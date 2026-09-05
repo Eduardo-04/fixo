@@ -12,6 +12,7 @@ export default function AdminBannersPage() {
   const [targetUrl, setTargetUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [placement, setPlacement] = useState<'home_top' | 'category_middle' | 'footer'>('home_top');
+  const [aspectRatio, setAspectRatio] = useState<'horizontal' | 'vertical' | 'square'>('horizontal');
   const [endsAt, setEndsAt] = useState('2026-12-31');
 
   const handleAddBanner = (e: React.FormEvent) => {
@@ -22,6 +23,7 @@ export default function AdminBannersPage() {
       target_url: targetUrl,
       banner_image_url: imageUrl || 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80',
       placement,
+      aspect_ratio: aspectRatio,
       category_id: null,
       city: 'Tuxtla Gutiérrez',
       impressions: 0,
@@ -36,6 +38,12 @@ export default function AdminBannersPage() {
     setSponsorName('');
     setTargetUrl('');
     setImageUrl('');
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('¿Estás seguro de que quieres eliminar este banner?')) {
+      setBanners(banners.filter(b => b.id !== id));
+    }
   };
 
   return (
@@ -91,6 +99,21 @@ export default function AdminBannersPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Formato de Imagen (Proporción)
+              </label>
+              <select
+                value={aspectRatio}
+                onChange={(e) => setAspectRatio(e.target.value as any)}
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+              >
+                <option value="horizontal">Horizontal (Banner Ancho)</option>
+                <option value="square">Cuadrado (Bloque)</option>
+                <option value="vertical">Vertical (Banner Alto)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                 Enlace de Destino (WhatsApp o Web)
               </label>
               <input
@@ -142,7 +165,7 @@ export default function AdminBannersPage() {
             >
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <div className="w-28 h-16 rounded-xl overflow-hidden bg-slate-900 shrink-0 relative">
-                  <img src={banner.banner_image_url} alt={banner.sponsor_name} className="w-full h-full object-cover" />
+                  <img src={banner.banner_image_url} alt={banner.sponsor_name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-slate-900">{banner.sponsor_name}</h4>
@@ -176,6 +199,15 @@ export default function AdminBannersPage() {
                     {((banner.clicks / (banner.impressions || 1)) * 100).toFixed(1)}%
                   </span>
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-3 sm:pt-0 sm:pl-4 sm:border-l border-slate-100 mt-2 sm:mt-0 w-full sm:w-auto">
+                <button
+                  onClick={() => handleDelete(banner.id)}
+                  className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition-colors"
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
           ))}

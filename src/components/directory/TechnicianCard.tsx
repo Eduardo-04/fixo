@@ -98,6 +98,14 @@ export default function TechnicianCard({ technician, className = '' }: Technicia
             </span>
           </div>
 
+          <div className="flex items-center gap-1.5 text-slate-600 mt-1">
+            <div className="flex items-center text-amber-400">
+              <Star className="w-4 h-4 fill-current" />
+            </div>
+            <span className="font-bold text-slate-800">{technician.rating?.toFixed(1) || '0.0'}</span>
+            <span className="text-slate-400">({technician.reviews_count || 0} reseñas)</span>
+          </div>
+
           {technician.neighborhoods_covered && technician.neighborhoods_covered.length > 0 && (
             <div className="flex items-center gap-1 text-[11px] text-slate-500 truncate">
               <span className="text-slate-400 shrink-0">Zonas:</span>

@@ -9,7 +9,7 @@ import { ArrowLeft, Filter, Users } from 'lucide-react';
 
 interface CategoryPageProps {
   params: { slug: string };
-  searchParams: { q?: string; colonia?: string; cfdi?: string };
+  searchParams: { q?: string; estado?: string; ciudad?: string; cfdi?: string };
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
@@ -54,12 +54,16 @@ export default function CategoryDirectoryPage({ params, searchParams }: Category
       if (!matchName && !matchBio && !matchCat) return false;
     }
 
-    // Filtro por colonia
-    if (searchParams.colonia && searchParams.colonia !== 'Todas las colonias') {
-      const hasNeighborhood = t.neighborhoods_covered.some(
-        (n) => n.toLowerCase() === searchParams.colonia?.toLowerCase()
-      );
-      if (!hasNeighborhood) return false;
+    // Filtro por estado
+    if (searchParams.estado && searchParams.estado !== 'Todos los estados') {
+      const hasState = t.state?.toLowerCase() === searchParams.estado?.toLowerCase();
+      if (!hasState) return false;
+    }
+
+    // Filtro por ciudad
+    if (searchParams.ciudad && searchParams.ciudad !== 'Todas las ciudades') {
+      const hasCity = t.city?.toLowerCase() === searchParams.ciudad?.toLowerCase();
+      if (!hasCity) return false;
     }
 
     // Filtro por CFDI
@@ -113,7 +117,8 @@ export default function CategoryDirectoryPage({ params, searchParams }: Category
       {/* Buscador y Filtros */}
       <SearchBar
         initialQuery={searchParams.q}
-        initialNeighborhood={searchParams.colonia}
+        initialState={searchParams.estado}
+        initialCity={searchParams.ciudad}
         initialCfdiOnly={searchParams.cfdi === 'true'}
       />
 
@@ -136,7 +141,7 @@ export default function CategoryDirectoryPage({ params, searchParams }: Category
             No se encontraron técnicos con estos filtros
           </h3>
           <p className="text-xs text-slate-500 leading-relaxed">
-            Intenta quitando el filtro de factura CFDI o cambiando la colonia seleccionada.
+            Intenta quitando el filtro de factura CFDI o cambiando la ciudad seleccionada.
           </p>
           <Link
             href={isAll ? '/oficios/todos' : `/oficios/${params.slug}`}

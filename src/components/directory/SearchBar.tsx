@@ -6,50 +6,49 @@ import { Search, MapPin, FileCheck2, Filter } from 'lucide-react';
 
 interface SearchBarProps {
   initialQuery?: string;
-  initialNeighborhood?: string;
+  initialState?: string;
+  initialCity?: string;
   initialCfdiOnly?: boolean;
   className?: string;
-  onFilterChange?: (filters: { query: string; neighborhood: string; cfdiOnly: boolean }) => void;
+  onFilterChange?: (filters: { query: string; state: string; city: string; cfdiOnly: boolean }) => void;
 }
 
-const COMMON_NEIGHBORHOODS = [
-  'Todas las colonias',
-  'Terán',
-  'Plan de Ayala',
-  'Las Palmas',
-  'Moctezuma',
-  'Centro',
-  'El Retiro',
-  'Colonia Maya',
-  'Patria Nueva',
-  'San Roque',
-  'Copoya',
-  'Chiapa de Corzo',
-];
+const LOCATIONS: Record<string, string[]> = {
+  'Chiapas': ['Tuxtla Gutiérrez', 'San Cristóbal de las Casas', 'Tapachula', 'Comitán', 'Chiapa de Corzo'],
+  'Tabasco': ['Villahermosa', 'Cárdenas', 'Comalcalco'],
+  'Oaxaca': ['Oaxaca de Juárez', 'Salina Cruz', 'Juchitán'],
+  'Ciudad de México': ['CDMX'],
+  'Nuevo León': ['Monterrey', 'San Pedro Garza García'],
+  'Jalisco': ['Guadalajara', 'Zapopan', 'Tlaquepaque'],
+};
+const ALL_STATES = Object.keys(LOCATIONS);
 
 export default function SearchBar({
   initialQuery = '',
-  initialNeighborhood = 'Todas las colonias',
+  initialState = 'Todos los estados',
+  initialCity = 'Todas las ciudades',
   initialCfdiOnly = false,
   className = '',
   onFilterChange,
 }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
-  const [neighborhood, setNeighborhood] = useState(initialNeighborhood);
+  const [state, setState] = useState(initialState);
+  const [city, setCity] = useState(initialCity);
   const [cfdiOnly, setCfdiOnly] = useState(initialCfdiOnly);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (onFilterChange) {
-      onFilterChange({ query, neighborhood, cfdiOnly });
+      onFilterChange({ query, state, city, cfdiOnly });
       return;
     }
 
     // Navegar a resultados
     const params = new URLSearchParams();
     if (query.trim()) params.set('q', query.trim());
-    if (neighborhood && neighborhood !== 'Todas las colonias') params.set('colonia', neighborhood);
+    if (state && state !== 'Todos los estados') params.set('estado', state);
+    if (city && city !== 'Todas las ciudades') params.set('ciudad', city);
     if (cfdiOnly) params.set('cfdi', 'true');
 
     router.push(`/oficios/todos?${params.toString()}`);
@@ -58,14 +57,22 @@ export default function SearchBar({
   const handleToggleCfdi = (checked: boolean) => {
     setCfdiOnly(checked);
     if (onFilterChange) {
-      onFilterChange({ query, neighborhood, cfdiOnly: checked });
+      onFilterChange({ query, state, city, cfdiOnly: checked });
     }
   };
 
-  const handleNeighborhoodChange = (selected: string) => {
-    setNeighborhood(selected);
+  const handleStateChange = (selected: string) => {
+    setState(selected);
+    setCity('Todas las ciudades');
     if (onFilterChange) {
-      onFilterChange({ query, neighborhood: selected, cfdiOnly });
+      onFilterChange({ query, state: selected, city: 'Todas las ciudades', cfdiOnly });
+    }
+  };
+
+  const handleCityChange = (selected: string) => {
+    setCity(selected);
+    if (onFilterChange) {
+      onFilterChange({ query, state, city: selected, cfdiOnly });
     }
   };
 
@@ -83,24 +90,43 @@ export default function SearchBar({
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              if (onFilterChange) onFilterChange({ query: e.target.value, neighborhood, cfdiOnly });
+              if (onFilterChange) onFilterChange({ query: e.target.value, state, city, cfdiOnly });
             }}
             placeholder="¿Qué servicio necesitas? (ej. minisplit, fuga, chapa, corto)"
             className="w-full bg-transparent border-0 focus:ring-0 text-sm sm:text-base text-brand-base placeholder:text-slate-400 p-0"
           />
         </div>
 
-        {/* Selector de Colonia */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 min-w-[190px]">
+        {/* Selector de Estado */}
+        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 min-w-[140px]">
           <MapPin className="w-4 h-4 text-brand-primary shrink-0" />
           <select
-            value={neighborhood}
-            onChange={(e) => handleNeighborhoodChange(e.target.value)}
+            value={state}
+            onChange={(e) => handleStateChange(e.target.value)}
             className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 p-0 cursor-pointer"
           >
-            {COMMON_NEIGHBORHOODS.map((col) => (
-              <option key={col} value={col}>
-                {col}
+            <option value="Todos los estados">Todos los estados</option>
+            {ALL_STATES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Selector de Ciudad */}
+        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 min-w-[140px]">
+          <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+          <select
+            value={city}
+            onChange={(e) => handleCityChange(e.target.value)}
+            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 p-0 cursor-pointer"
+            disabled={state === 'Todos los estados'}
+          >
+            <option value="Todas las ciudades">Todas las ciudades</option>
+            {state !== 'Todos los estados' && LOCATIONS[state]?.map((c) => (
+              <option key={c} value={c}>
+                {c}
               </option>
             ))}
           </select>
@@ -139,7 +165,7 @@ export default function SearchBar({
               type="button"
               onClick={() => {
                 setQuery(term);
-                if (onFilterChange) onFilterChange({ query: term, neighborhood, cfdiOnly });
+                if (onFilterChange) onFilterChange({ query: term, state, city, cfdiOnly });
               }}
               className="bg-slate-200/70 hover:bg-slate-300/80 text-slate-700 px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-colors shrink-0"
             >

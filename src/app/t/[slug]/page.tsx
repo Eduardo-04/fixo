@@ -11,9 +11,11 @@ import {
   CheckCircle2,
   ArrowLeft,
   Sparkles,
+  Star,
 } from 'lucide-react';
 import { MOCK_TECHNICIANS } from '@/lib/mock-data';
 import WhatsAppButton from '@/components/shared/WhatsAppButton';
+import ProfileActions from '@/components/technician/ProfileActions';
 import QRCodeCard from '@/components/technician/QRCodeCard';
 import PortfolioGrid from '@/components/technician/PortfolioGrid';
 import { trackProfileView } from '@/app/actions';
@@ -131,27 +133,38 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
                 {categoryNames}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-1">
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center text-amber-400">
+                  <Star className="w-5 h-5 fill-current" />
+                </div>
+                <span className="text-lg font-black text-slate-900">{tech.rating?.toFixed(1) || '0.0'}</span>
+                <span className="text-sm font-medium text-slate-500 underline decoration-slate-300 underline-offset-2 cursor-pointer hover:text-slate-700">
+                  {tech.reviews_count || 0} reseñas verificadas
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 pt-2 border-t border-slate-100 mt-3">
                 <span className="flex items-center gap-1">
                   <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-                  <strong>{tech.experience_years} años</strong> de experiencia
+                  <strong>{tech.experience_years} años</strong> de exp.
                 </span>
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-brand-primary" />
-                  <span>{tech.city}, Chiapas</span>
+                  <span>{tech.city}, Chis.</span>
                 </span>
               </div>
             </div>
 
-            {/* CTA WhatsApp Principal */}
-            <div className="w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
+            {/* CTA WhatsApp Principal y Acciones */}
+            <div className="w-full sm:w-auto sm:min-w-[200px] shrink-0 pt-4 sm:pt-0 flex flex-col gap-2">
               <WhatsAppButton
                 phone={tech.phone_whatsapp}
                 technicianName={tech.full_name}
                 profileId={tech.id}
                 variant="primary"
-                className="w-full sm:w-auto"
+                className="w-full"
               />
+              <ProfileActions />
             </div>
           </div>
 
@@ -218,6 +231,8 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
               phone={tech.phone_whatsapp}
               emitsCfdi={tech.emits_cfdi}
               isVerified={isVerified}
+              rating={tech.rating}
+              reviewsCount={tech.reviews_count}
             />
 
             {/* Garantía de Trato Directo */}
