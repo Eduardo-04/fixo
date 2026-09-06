@@ -6,9 +6,10 @@ import type { PortfolioItem } from '@/types/database';
 
 interface PortfolioGridProps {
   items: PortfolioItem[];
+  onDelete?: (id: string) => void;
 }
 
-export default function PortfolioGrid({ items }: PortfolioGridProps) {
+export default function PortfolioGrid({ items, onDelete }: PortfolioGridProps) {
   const [activeBeforeAfter, setActiveBeforeAfter] = useState<Record<string, boolean>>({});
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
 
@@ -91,7 +92,22 @@ export default function PortfolioGrid({ items }: PortfolioGridProps) {
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Trabajo Realizado
                   </span>
-                  <span>Chiapas</span>
+                  
+                  {onDelete ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('¿Estás seguro de eliminar este trabajo de tu portafolio?')) {
+                          onDelete(item.id);
+                        }
+                      }}
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950 px-2 py-1 rounded transition-colors flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" /> Eliminar
+                    </button>
+                  ) : (
+                    <span>Chiapas</span>
+                  )}
                 </div>
               </div>
             </div>

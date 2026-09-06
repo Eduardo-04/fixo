@@ -36,7 +36,7 @@ export default async function Navbar() {
             />
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-2xl font-black tracking-tight text-white font-mono">
+                <span className="text-xl sm:text-2xl font-black tracking-tight text-white font-mono shrink-0">
                   CHAMBITAS<span className="text-brand-primary">.</span>
                 </span>
                 <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-brand-accent/20 text-brand-accent border border-brand-accent/30">
@@ -50,7 +50,7 @@ export default async function Navbar() {
           </Link>
 
           {/* Enlaces y Acciones */}
-          <div className="flex items-center gap-1 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
             <ThemeToggle />
             <Link
               href="/oficios/todos"

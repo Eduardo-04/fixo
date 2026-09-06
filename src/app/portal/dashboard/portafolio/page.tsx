@@ -104,6 +104,21 @@ export default function PortfolioPage() {
     }
   };
 
+  const handleDeleteItem = async (id: string) => {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('portfolio_items')
+      .delete()
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error deleting portfolio item:', error);
+      alert('Error al eliminar el trabajo.');
+    } else {
+      setItems(items.filter((item) => item.id !== id));
+    }
+  };
+
   if (loading) {
     return <div className="p-8 text-center text-slate-500 font-medium">Cargando portafolio...</div>;
   }
@@ -215,7 +230,7 @@ export default function PortfolioPage() {
             Aún no has publicado trabajos. Sube el primero arriba para destacarte ante los clientes.
           </div>
         ) : (
-          <PortfolioGrid items={items} />
+          <PortfolioGrid items={items} onDelete={handleDeleteItem} />
         )}
       </div>
     </div>
