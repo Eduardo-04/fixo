@@ -2,7 +2,22 @@
 
 Este documento resume los avances más recientes para que puedas continuar trabajando sin problemas.
 
-## 🚀 Logros y Cambios Implementados (Sesión Actual)
+## 🚀 Logros y Cambios Implementados (Sesiones Recientes)
+
+### Cambio de Marca a "Chambitas"
+- Se renombró globalmente el proyecto de Fixo a **Chambitas**.
+- Se actualizaron los meta tags, manifest de PWA, variables, y el logotipo por un archivo `logo.svg` en la raíz.
+
+### Roles y Panel de Clientes (`/portal/dashboard/client`)
+- Se completó la separación del rol de `client` vs `technician` a nivel Supabase y Frontend.
+- Los clientes ahora tienen un panel simplificado que oculta los campos e inputs que solo le sirven a los técnicos (cobertura, facturación, bio, etc.).
+- Se implementó la vista de **Mis Reseñas** y **Técnicos Favoritos** conectadas a `Supabase`.
+- Se añadió la capacidad de **Editar y actualizar reseñas** mediante el uso inteligente del `update` en Supabase al detectar reseñas existentes.
+
+### Correcciones Críticas de UI/UX y PWA
+- Se corrigió el fondo blanco que no respetaba el **Modo Oscuro** (Dark Mode) en las tablas de `admin` y paneles principales.
+- Se reparó el bucle infinito en el `Auth Callback` y un fallo 500 fatal provocado por un link malformado.
+- Se cerraron procesos huérfanos locales que bloqueaban el servidor de desarrollo en el puerto 3000.
 
 ### 1. Autenticación y Cuentas de Técnicos
 - **Trigger Automático:** Se creó el trigger de base de datos (`20240106_auth_trigger.sql`) que auto-genera el registro en la tabla `profiles` cada que un nuevo usuario se registra en `auth.users`, eliminando para siempre el error de "Perfil Incompleto".

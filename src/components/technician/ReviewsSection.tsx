@@ -8,6 +8,7 @@ import Link from 'next/link';
 
 interface Review {
   id: string;
+  reviewer_id?: string;
   rating: number;
   comment: string;
   created_at: string;
@@ -25,14 +26,17 @@ export default function ReviewsSection({ profileId, initialReviews }: ReviewsSec
   const [reviews, setReviews] = useState<Review[]>(
     initialReviews.map(r => ({
       ...r,
+      reviewer_id: r.reviewer_id,
       reviewer: r.reviewer || r.profiles || { full_name: r.author_name || 'Usuario Chambitas' }
     }))
   );
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [existingReviewId, setExistingReviewId] = useState<string | null>(null);
   
   const supabase = createClient();
   const router = useRouter();
@@ -40,10 +44,20 @@ export default function ReviewsSection({ profileId, initialReviews }: ReviewsSec
   useEffect(() => {
     async function getUser() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      if (user) {
+        setUserId(user.id);
+        
+        // Buscar si el usuario ya tiene una reseña para precargarla
+        const userReview = reviews.find(r => r.reviewer_id === user.id);
+        if (userReview) {
+          setExistingReviewId(userReview.id);
+          setRating(userReview.rating);
+          setComment(userReview.comment || '');
+        }
+      }
     }
     getUser();
-  }, []);
+  }, [reviews]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,34 +66,53 @@ export default function ReviewsSection({ profileId, initialReviews }: ReviewsSec
     setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .insert({
-          profile_id: profileId,
-          reviewer_id: userId,
-          rating,
-          comment
-        })
-        .select(`
-          *,
-          reviewer:profiles!reviews_reviewer_id_fkey(full_name)
-        `)
-        .single();
+      if (existingReviewId) {
+        // Actualizar reseña existente
+        const { data, error } = await supabase
+          .from('reviews')
+          .update({
+            rating,
+            comment,
+            created_at: new Date().toISOString()
+          } as any)
+          .eq('id', existingReviewId)
+          .select(`
+            *,
+            reviewer:profiles!reviews_reviewer_id_fkey(full_name)
+          `)
+          .single();
+          
+        if (error) throw error;
         
-      if (error) throw error;
+        setReviews(reviews.map(r => r.id === existingReviewId ? (data as any) : r));
+        alert('Reseña actualizada exitosamente.');
+      } else {
+        // Insertar nueva reseña
+        const { data, error } = await supabase
+          .from('reviews')
+          .insert({
+            profile_id: profileId,
+            reviewer_id: userId,
+            rating,
+            comment
+          } as any)
+          .select(`
+            *,
+            reviewer:profiles!reviews_reviewer_id_fkey(full_name)
+          `)
+          .single();
+          
+        if (error) throw error;
+        
+        setReviews([data as any, ...reviews]);
+        setExistingReviewId((data as any).id);
+      }
       
-      setReviews([data, ...reviews]);
-      setComment('');
-      setRating(5);
       router.refresh();
       
     } catch (err: any) {
       console.error('Error enviando reseña:', err);
-      if (err.message?.includes('duplicate key value')) {
-        alert('Ya has dejado una reseña para este técnico.');
-      } else {
-        alert('Hubo un error al enviar tu reseña. Por favor intenta de nuevo.');
-      }
+      alert('Hubo un error al enviar tu reseña. Por favor intenta de nuevo.');
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +136,7 @@ export default function ReviewsSection({ profileId, initialReviews }: ReviewsSec
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 h-fit shadow-sm">
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-brand-primary" />
-            Dejar una reseña
+            {existingReviewId ? 'Edita tu reseña' : 'Dejar una reseña'}
           </h3>
           
           {!userId ? (
@@ -165,7 +198,7 @@ export default function ReviewsSection({ profileId, initialReviews }: ReviewsSec
                 disabled={isSubmitting}
                 className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white font-bold text-xs py-3 rounded-xl transition-colors disabled:opacity-50"
               >
-                {isSubmitting ? 'Publicando...' : 'Publicar reseña'}
+                {isSubmitting ? 'Guardando...' : (existingReviewId ? 'Actualizar reseña' : 'Publicar reseña')}
               </button>
             </form>
           )}
@@ -199,12 +232,17 @@ export default function ReviewsSection({ profileId, initialReviews }: ReviewsSec
                   {review.comment && (
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-2">"{review.comment}"</p>
                   )}
-                  <div className="text-[10px] text-slate-400 dark:text-slate-500">
-                    {new Date(review.created_at).toLocaleDateString('es-MX', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 flex justify-between">
+                    <span>
+                      {new Date(review.created_at).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                    {review.id === existingReviewId && (
+                      <span className="text-brand-primary font-bold">Tu reseña</span>
+                    )}
                   </div>
                 </div>
               ))}

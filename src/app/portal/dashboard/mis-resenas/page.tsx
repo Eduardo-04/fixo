@@ -90,12 +90,18 @@ export default async function MyReviewsPage() {
                 )}
               </div>
               
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-2">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-2 flex items-center justify-between">
                 <Link 
                   href={`/t/${review.technician?.slug}`}
-                  className="text-xs font-bold text-brand-primary hover:text-brand-primary-hover flex items-center gap-1"
+                  className="text-xs font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 flex items-center gap-1"
                 >
                   Ver Perfil
+                </Link>
+                <Link 
+                  href={`/t/${review.technician?.slug}#resenas`}
+                  className="text-xs font-bold text-brand-primary hover:text-brand-primary-hover flex items-center gap-1"
+                >
+                  Editar Reseña
                 </Link>
               </div>
             </div>

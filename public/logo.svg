@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+  <defs>
+    <!-- Gradiente de fondo (Slate/Midnight Navy) -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <!-- Gradiente Industrial (userSpaceOnUse para iluminación global de 3D) -->
+    <linearGradient id="amberGradient" x1="100" y1="100" x2="420" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDBA74" />  <!-- Highlight de luz -->
+      <stop offset="35%" stop-color="#EA580C" /> <!-- Color de Marca -->
+      <stop offset="100%" stop-color="#7C2D12" /> <!-- Sombra profunda -->
+    </linearGradient>
+
+    <!-- Gradiente del núcleo de Verificación/Tech -->
+    <linearGradient id="accentGlow" x1="180" y1="100" x2="350" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+    <!-- Sombra principal de la herramienta -->
+    <filter id="toolShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="8" dy="16" stdDeviation="16" flood-color="#000000" flood-opacity="0.55" />
+      <feDropShadow dx="2" dy="6" stdDeviation="6" flood-color="#EA580C" flood-opacity="0.25" />
+    </filter>
+
+    <!-- Brillo del núcleo tecnológico -->
+    <filter id="coreGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#10B981" flood-opacity="0.65" />
+    </filter>
+  </defs>
+
+  <!-- Contenedor Base (App Icon Squircle) -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGradient)" />
+  <!-- Borde tenue para contraste en modo oscuro -->
+  <rect width="510" height="510" x="1" y="1" rx="111" fill="none" stroke="#334155" stroke-width="2" stroke-opacity="0.6" />
+
+  <!-- GRUPO PRINCIPAL: Llave de boca fija estilizada, escalada y rotada 45° -->
+  <g filter="url(#toolShadow)">
+    <g transform="translate(256, 256) scale(0.85) rotate(45) translate(-256, -256)">
+      
+      <!-- Cuerpo y Mango de la Llave -->
+      <!-- Usa un trazo súper grueso (84px) para dar ese peso de herramienta industrial -->
+      <line x1="256" y1="200" x2="256" y2="400" stroke="url(#amberGradient)" stroke-width="84" stroke-linecap="round" />
+      
+      <!-- Cabeza de la Llave (Formando la mandíbula o la 'C' implícita) -->
+      <!-- Es un arco perfecto que conecta fluido con el mango -->
+      <path d="M 172 140 A 84 84 0 0 0 340 140" fill="none" stroke="url(#amberGradient)" stroke-width="84" stroke-linecap="round" />
+      
+      <!-- Bisel de profundidad para el mango (Highlight inferior) -->
+      <line x1="256" y1="212" x2="256" y2="382" stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="24" stroke-linecap="round" />
+      
+      <!-- Ranura central del mango (Acabado clásico de herramientas) -->
+      <line x1="256" y1="210" x2="256" y2="380" stroke="#0F172A" stroke-width="24" stroke-linecap="round" />
+
+    </g>
+  </g>
+
+  <!-- GRUPO SECUNDARIO: Tuerca / Núcleo tecnológico activo (Verificado) -->
+  <g filter="url(#coreGlow)">
+    <g transform="translate(256, 256) scale(0.85) rotate(45) translate(-256, -256)">
+      
+      <!-- Geometría de la tuerca encajada perfectamente en las fauces de la llave -->
+      <polygon points="256,58 286,75 286,110 256,127 226,110 226,75" fill="url(#accentGlow)" />
+      
+      <!-- Borde de cristal brillante para darle apariencia high-tech -->
+      <polygon points="256,58 286,75 286,110 256,127 226,110 226,75" fill="none" stroke="#A7F3D0" stroke-width="2" stroke-opacity="0.7" />
+      
+      <!-- Eje pasante oscuro -->
+      <circle cx="256" cy="92.5" r="14" fill="#0F172A" />
+      
+    </g>
+  </g>
+
+</svg>

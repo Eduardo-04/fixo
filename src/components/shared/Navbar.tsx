@@ -28,7 +28,7 @@ export default async function Navbar() {
           {/* Logo & Marca */}
           <Link href="/" className="flex items-center gap-2 group">
             <Image 
-              src="/logo.png" 
+              src="/logo.svg" 
               alt="Chambitas Logo" 
               width={44} 
               height={44} 

@@ -1,8 +1,8 @@
-# Contexto del Proyecto FIXO
+# Contexto del Proyecto Chambitas
 
-**Fixo ("La red de tus mejores chambas")** es un directorio local y tarjeta digital con código QR para prestadores de servicios técnicos y oficios (plomería, electricidad, climas/refrigeración, mecánica, carpintería, cerrajería, etc.) en Tuxtla Gutiérrez, Chiapas.
+**Chambitas ("La red de tus mejores chambas")** es un directorio local y tarjeta digital con código QR para prestadores de servicios técnicos y oficios (plomería, electricidad, climas/refrigeración, mecánica, carpintería, cerrajería, etc.) en Tuxtla Gutiérrez, Chiapas.
 
-El objetivo principal es conectar a clientes con técnicos verificados directamente vía WhatsApp, sin intermediar el dinero de la mano de obra.
+El objetivo principal es conectar a clientes con técnicos verificados directamente vía WhatsApp, sin intermediar el dinero de la mano de obra. Adicionalmente, los clientes pueden dejar reseñas (y editarlas) y guardar técnicos en sus favoritos.
 
 ## Stack Tecnológico
 - **Framework:** Next.js 14 (App Router)
@@ -22,15 +22,17 @@ Actualmente el sistema cuenta con **modo mock/desarrollo** activo para facilitar
 | **`/oficios/[slug]`** | **Listado por Categoría**: Filtros por colonia, palabra clave y facturación. |
 | **`/t/[slug]`** | **Tarjeta Digital del Técnico**: QR dinámico, botón a WhatsApp y portafolio. |
 
-### 🛠️ Portal del Técnico (Privado)
+### 🛠️ Portal del Técnico / Cliente (Privado)
 | Ruta | Descripción |
 | :--- | :--- |
-| **`/portal/login`** | **Acceso**: Botón de acceso rápido (Demo Carlos Morales). |
-| **`/portal/dashboard`** | **Métricas**: Vistas, clics a WhatsApp y conversión. |
-| **`/portal/dashboard/perfil`** | **Edición**: Datos de contacto y zonas atendidas. |
-| **`/portal/dashboard/portafolio`** | **Galería**: Subida de fotos comprimidas y switch Antes/Después. |
-| **`/portal/dashboard/verificacion`** | **INE**: Subida de credencial para insignia verificada. |
-| **`/portal/dashboard/mi-qr`** | **Generador de Volante**: Descarga de PDF/PNG con QR promocional. |
+| **`/portal/login`** | **Acceso**: Login y redirección inteligente. |
+| **`/portal/dashboard`** | **Métricas**: Vistas, clics a WhatsApp y conversión (solo Técnicos). Inicio limpio (para Clientes). |
+| **`/portal/dashboard/perfil`** | **Edición**: Datos de contacto, biografía y zonas atendidas. Oculta campos técnicos si el rol es `client`. |
+| **`/portal/dashboard/portafolio`** | **Galería**: Subida de fotos comprimidas y switch Antes/Después (solo Técnicos). |
+| **`/portal/dashboard/verificacion`** | **INE**: Subida de credencial para insignia verificada (solo Técnicos). |
+| **`/portal/dashboard/mi-qr`** | **Generador de Volante**: Descarga de PDF/PNG con QR promocional (solo Técnicos). |
+| **`/portal/dashboard/mis-resenas`** | **Reseñas**: Panel para gestionar y editar las reseñas dejadas a técnicos (Clientes). |
+| **`/portal/dashboard/favoritos`** | **Favoritos**: Lista de técnicos guardados con acceso rápido a su perfil (Clientes). |
 
 ### 👑 Panel Superadmin
 | Ruta | Descripción |
@@ -44,7 +46,7 @@ Actualmente el sistema cuenta con **modo mock/desarrollo** activo para facilitar
 Para pasar del modo demo al modo real:
 
 1. **Crear Proyecto**: En [supabase.com](https://supabase.com).
-2. **Ejecutar SQL**: Correr el archivo `supabase/migrations/20240101_init.sql` en el SQL Editor de Supabase. Esto crea las 6 tablas principales (`profiles`, `categories`, `technician_categories`, `portfolio_items`, `verification_documents`, `banners`) y funciones/políticas (RLS).
+2. **Ejecutar SQL**: Correr los archivos de `supabase/migrations/` en el SQL Editor de Supabase (incluyendo reviews, favorites y auth triggers).
 3. **Crear Storage Buckets**:
    - `public-media` (Public Bucket): Para fotos de perfil y portafolios.
    - `private-docs` (Private Bucket): Para documentos de verificación (INE).
