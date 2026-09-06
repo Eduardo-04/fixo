@@ -9,7 +9,7 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mockfixo.supabase.co';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mockchambitas.supabase.co';
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'mock-anon-key';
 
   const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
@@ -61,7 +61,7 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // En modo preview/desarrollo sin Supabase configurado en producción, no bloquear
-    const isMockEnv = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('mockfixo');
+    const isMockEnv = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('mockchambitas');
     const path = request.nextUrl.pathname;
 
     if (!isMockEnv) {
@@ -106,7 +106,7 @@ export async function updateSession(request: NextRequest) {
     }
   } catch (err) {
     // Si la conexión Supabase falla (por ejemplo en preview sin credenciales reales), permitir navegación libre
-    console.warn('[Fixo Auth Middleware] Supabase unreachable or mock mode active');
+    console.warn('[Chambitas Auth Middleware] Supabase unreachable or mock mode active');
   }
 
   return response;

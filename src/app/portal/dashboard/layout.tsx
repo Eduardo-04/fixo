@@ -12,6 +12,8 @@ import {
   LogOut,
   ExternalLink,
   Wrench,
+  Heart,
+  MessageSquare,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
@@ -23,7 +25,30 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  const navItems = [
+  const [slug, setSlug] = useState<string>('');
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('slug, role')
+        .eq('id', user.id)
+        .single();
+        
+      if (profile) {
+        setSlug(profile.slug);
+        setRole(profile.role);
+      }
+    }
+    fetchProfile();
+  }, []);
+
+  const technicianNavItems = [
     { label: 'Resumen y Métricas', href: '/portal/dashboard', icon: LayoutDashboard },
     { label: 'Mi Perfil y Zonas', href: '/portal/dashboard/perfil', icon: UserCheck },
     { label: 'Portafolio de Trabajos', href: '/portal/dashboard/portafolio', icon: ImageIcon },
@@ -31,26 +56,13 @@ export default function DashboardLayout({
     { label: 'Mi QR y Flyer', href: '/portal/dashboard/mi-qr', icon: QrCode },
   ];
 
-  const [slug, setSlug] = useState<string>('');
+  const clientNavItems = [
+    { label: 'Técnicos Favoritos', href: '/portal/dashboard/favoritos', icon: Heart },
+    { label: 'Mis Reseñas', href: '/portal/dashboard/mis-resenas', icon: MessageSquare },
+    { label: 'Mi Perfil', href: '/portal/dashboard/perfil', icon: UserCheck },
+  ];
 
-  useEffect(() => {
-    async function fetchSlug() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('slug')
-        .eq('id', user.id)
-        .single();
-        
-      if (profile) {
-        setSlug(profile.slug);
-      }
-    }
-    fetchSlug();
-  }, []);
+  const navItems = role === 'client' ? clientNavItems : technicianNavItems;
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -59,7 +71,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row transition-colors duration-300">
       {/* Sidebar de Navegación del Técnico */}
       <aside className="w-full md:w-64 bg-brand-base border-r border-slate-800 text-white flex flex-col justify-between shrink-0">
         <div>
@@ -70,7 +82,7 @@ export default function DashboardLayout({
                 <Wrench className="w-4 h-4 text-white" />
               </div>
               <span className="font-mono font-bold text-sm tracking-tight">
-                PORTAL TÉCNICO
+                {role === 'client' ? 'MI CUENTA' : 'PORTAL TÉCNICO'}
               </span>
             </div>
           </div>
@@ -100,7 +112,7 @@ export default function DashboardLayout({
 
         {/* Footer del Sidebar */}
         <div className="p-4 border-t border-slate-800 space-y-2">
-          {slug && (
+          {role === 'technician' && slug && (
             <Link
               href={`/t/${slug}`}
               target="_blank"

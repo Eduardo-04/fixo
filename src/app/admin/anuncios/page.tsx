@@ -33,15 +33,15 @@ export default function AdminAnnouncementsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 font-mono">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
           Anuncios Globales
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Publica un banner destacado que aparecerá en el panel de control de todos los técnicos registrados.
         </p>
       </div>
 
-      <div className="max-w-2xl bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="max-w-2xl bg-white dark:bg-slate-950 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         {message && (
           <div className="mb-6 p-4 bg-emerald-50 text-emerald-800 rounded-2xl text-xs font-bold border border-emerald-200">
             {message}
@@ -59,7 +59,7 @@ export default function AdminAnnouncementsPage() {
                 name="title"
                 required
                 placeholder="Ej. ¡Nueva función disponible!"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-brand-primary"
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm dark:text-slate-200 focus:border-brand-primary"
               />
             </div>
 
@@ -72,7 +72,7 @@ export default function AdminAnnouncementsPage() {
                 required
                 rows={3}
                 placeholder="Escribe el cuerpo del anuncio..."
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-brand-primary resize-none"
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm dark:text-slate-200 focus:border-brand-primary resize-none"
               />
             </div>
 
@@ -85,7 +85,7 @@ export default function AdminAnnouncementsPage() {
                   type="text"
                   name="link_text"
                   placeholder="Ej. Ver más"
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-brand-primary"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm dark:text-slate-200 focus:border-brand-primary"
                 />
               </div>
               <div>
@@ -96,7 +96,7 @@ export default function AdminAnnouncementsPage() {
                   type="text"
                   name="link_url"
                   placeholder="Ej. https://..."
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-brand-primary"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm dark:text-slate-200 focus:border-brand-primary"
                 />
               </div>
             </div>
@@ -107,7 +107,7 @@ export default function AdminAnnouncementsPage() {
               </label>
               <select
                 name="type"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:border-brand-primary"
+                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm dark:text-slate-200 focus:border-brand-primary"
               >
                 <option value="info">Informativo (Azul)</option>
                 <option value="success">Éxito / Nuevo (Verde)</option>
@@ -116,7 +116,7 @@ export default function AdminAnnouncementsPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
               <input
                 type="checkbox"
                 id="is_active"
@@ -124,13 +124,13 @@ export default function AdminAnnouncementsPage() {
                 defaultChecked
                 className="w-4 h-4 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
               />
-              <label htmlFor="is_active" className="text-sm font-semibold text-slate-700 cursor-pointer">
+              <label htmlFor="is_active" className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
                 Activar anuncio inmediatamente
               </label>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-4 border-t border-slate-100">
+          <div className="flex items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
             <Info className="w-4 h-4 text-slate-400" />
             <span className="text-xs text-slate-500">
               Al guardar, se reemplazará y desactivará cualquier anuncio previo.

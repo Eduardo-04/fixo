@@ -23,6 +23,7 @@ function LoginForm() {
   const [isRegister, setIsRegister] = useState(modeParam === 'register');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Sincronizar si cambia el query param (ej. clic en "Anunciar mi Oficio" vs "Soy Técnico")
   useState(() => {
@@ -36,11 +37,13 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [role, setRole] = useState<'client' | 'technician'>(modeParam === 'register' ? 'technician' : 'client');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
 
     const supabase = createClient();
 
@@ -52,8 +55,8 @@ function LoginForm() {
           options: {
             data: {
               full_name: fullName,
-              phone: phone, // Agregado para que el Trigger lo lea
-              role: 'technician',
+              phone: role === 'technician' ? phone : null,
+              role: role,
             },
           },
         });
@@ -61,6 +64,13 @@ function LoginForm() {
         if (authError) throw authError;
 
         // Ya no insertamos manualmente, el Trigger de Base de Datos lo hará por nosotros
+
+        // Si Supabase tiene activada la confirmación de correos, no habrá sesión aún
+        if (!authData.session) {
+          setSuccessMsg('¡Registro exitoso! Hemos enviado un enlace a tu correo. Por favor, revísalo para confirmar tu cuenta antes de iniciar sesión.');
+          setIsRegister(false); // Cambiar a la vista de login
+          return;
+        }
 
         router.push('/portal/dashboard');
       } else {
@@ -99,12 +109,12 @@ function LoginForm() {
             <Wrench className="w-6 h-6" />
           </div>
           <h2 className="text-2xl font-black text-slate-900 font-mono">
-            {isRegister ? 'Crea tu Perfil Profesional Fixo' : 'Acceso para Técnicos'}
+            {isRegister ? 'Crear mi Cuenta' : 'Iniciar Sesión'}
           </h2>
           <p className="text-xs text-slate-500 max-w-xs mx-auto">
             {isRegister
-              ? 'Publica tus servicios, genera tu código QR y recibe clientes por WhatsApp.'
-              : 'Ingresa para ver tus estadísticas y actualizar tu portafolio de trabajos.'}
+              ? 'Únete a Chambitas para contactar o anunciar tus servicios.'
+              : 'Ingresa a tu panel de control.'}
           </p>
         </div>
 
@@ -117,9 +127,33 @@ function LoginForm() {
             </div>
           )}
 
+          {successMsg && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200 text-xs text-green-800">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>{successMsg}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {isRegister && (
               <>
+                <div className="flex bg-slate-100 p-1 rounded-xl mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setRole('client')}
+                    className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all ${role === 'client' ? 'bg-white shadow-sm text-brand-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Soy Cliente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('technician')}
+                    className={`flex-1 text-xs font-bold py-2 rounded-lg transition-all ${role === 'technician' ? 'bg-white shadow-sm text-brand-primary' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    Soy Técnico
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                     Nombre Completo o del Taller
@@ -137,22 +171,24 @@ function LoginForm() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                    Teléfono WhatsApp (10 dígitos)
-                  </label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="961 123 4567"
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
-                    />
+                {role === 'technician' && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                      Teléfono WhatsApp (10 dígitos)
+                    </label>
+                    <div className="relative">
+                      <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+                      <input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="961 123 4567"
+                        className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
 
@@ -188,6 +224,13 @@ function LoginForm() {
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
                 />
               </div>
+              {!isRegister && (
+                <div className="text-right mt-2">
+                  <Link href="/portal/login/recuperar" className="text-[11px] font-semibold text-brand-primary hover:text-brand-primary-hover transition-colors">
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
+              )}
             </div>
 
             <button
@@ -199,14 +242,40 @@ function LoginForm() {
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
-                  <span>{isRegister ? 'Crear mi Perfil Fixo' : 'Iniciar Sesión'}</span>
+                  <span>{isRegister ? 'Crear Cuenta' : 'Iniciar Sesión'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
+          <div className="relative flex items-center py-2">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-medium">O continúa con</span>
+            <div className="flex-grow border-t border-slate-200"></div>
+          </div>
 
+          <button
+            type="button"
+            onClick={async () => {
+              const supabase = createClient();
+              await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                  redirectTo: `${window.location.origin}/auth/callback`
+                }
+              });
+            }}
+            className="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs py-3 rounded-xl shadow-sm border border-slate-200 transition-all"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span>Google</span>
+          </button>
 
           {/* Toggle entre login y registro */}
           <div className="pt-3 border-t border-slate-100 text-center">
@@ -215,12 +284,13 @@ function LoginForm() {
               onClick={() => {
                 setIsRegister(!isRegister);
                 setErrorMsg(null);
+                setSuccessMsg(null);
               }}
               className="text-xs text-slate-600 hover:text-brand-primary font-semibold transition-colors"
             >
               {isRegister
                 ? '¿Ya tienes una cuenta? Inicia sesión aquí'
-                : '¿Eres técnico nuevo? Regístrate gratis aquí'}
+                : '¿Eres nuevo? Regístrate gratis aquí'}
             </button>
           </div>
         </div>

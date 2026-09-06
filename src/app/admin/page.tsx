@@ -29,61 +29,61 @@ export default async function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 font-mono">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
           Panel de Administración Fixo
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Supervisión general de técnicos registrados, identificaciones por validar e inventario en Chiapas.
         </p>
       </div>
 
       {/* Métricas Globales */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Técnicos Registrados
           </span>
-          <p className="text-2xl font-black text-slate-900 font-mono">{totalTechnicians}</p>
-          <p className="text-[11px] text-emerald-600 font-medium">En plataforma</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">{totalTechnicians}</p>
+          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">En plataforma</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             INEs Verificados
           </span>
-          <p className="text-2xl font-black text-slate-900 font-mono">{verifiedCount}</p>
-          <p className="text-[11px] text-slate-500">Credenciales aprobadas</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">{verifiedCount}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Credenciales aprobadas</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Vistas Acumuladas
           </span>
-          <p className="text-2xl font-black text-slate-900 font-mono">{totalViews}</p>
-          <p className="text-[11px] text-slate-500">Tráfico de directorios y QR</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">{totalViews}</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Tráfico de directorios y QR</p>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Contactos WhatsApp
           </span>
-          <p className="text-2xl font-black text-slate-900 font-mono">{totalClicks}</p>
-          <p className="text-[11px] text-emerald-600 font-medium">Chambas conectadas</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">{totalClicks}</p>
+          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Chambas conectadas</p>
         </div>
       </div>
 
       {/* Alerta de Verificaciones Pendientes */}
       {(pendingVerifications || 0) > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-500 flex items-center justify-center shrink-0">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-amber-900">
+              <h3 className="text-sm font-bold text-amber-900 dark:text-amber-500">
                 Hay {pendingVerifications} identificaciones oficiales (INE) en espera de revisión
               </h3>
-              <p className="text-xs text-amber-700 mt-0.5">
+              <p className="text-xs text-amber-700 dark:text-amber-600 mt-0.5">
                 Valida los datos y autoriza la insignia de confianza para activar el badge oficial.
               </p>
             </div>

@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import PWAInstallPrompt from '@/components/shared/PWAInstallPrompt';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -18,7 +20,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Fixo - Directorio Local y Tarjeta Digital para Técnicos y Oficios en Chiapas',
+  title: 'Chambitas - Directorio Local y Tarjeta Digital para Técnicos y Oficios en Chiapas',
   description: 'Conecta con técnicos verificados de plomería, electricidad, climas y más en Tuxtla Gutiérrez y Chiapas. Sin comisiones, directo por WhatsApp.',
   keywords: ['técnicos Tuxtla', 'plomero Tuxtla Gutiérrez', 'electricista Chiapas', 'minisplits clima', 'oficios Chiapas', 'tarjeta digital QR'],
   manifest: '/manifest.json',
@@ -27,12 +29,12 @@ export const metadata: Metadata = {
     apple: '/icons/icon-192x192.png',
   },
   openGraph: {
-    title: 'Fixo - La red de tus mejores chambas',
+    title: 'Chambitas - La red de tus mejores chambas',
     description: 'Directorio local y tarjeta digital con QR para técnicos y oficios en Chiapas.',
     type: 'website',
     locale: 'es_MX',
-    url: 'https://fixo.com.mx',
-    siteName: 'Fixo',
+    url: 'https://chambitas.shop',
+    siteName: 'Chambitas',
   },
 };
 
@@ -47,10 +49,13 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="min-h-screen flex flex-col bg-brand-bg text-brand-base antialiased selection:bg-brand-primary selection:text-white">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <body className="min-h-screen flex flex-col bg-brand-bg dark:bg-slate-900 text-brand-base dark:text-slate-100 antialiased selection:bg-brand-primary selection:text-white transition-colors duration-300">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <PWAInstallPrompt />
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -50,7 +50,7 @@ export default function MyQRCodePage() {
           Mi Tarjeta Digital & Código QR
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          Descarga e imprime tu tarjeta oficial Fixo para tus volantes, tarjetas de presentación o rótulos de tu vehículo.
+          Descarga e imprime tu tarjeta oficial Chambitas para tus volantes, tarjetas de presentación o rótulos de tu vehículo.
         </p>
       </div>
 
@@ -120,7 +120,7 @@ export default function MyQRCodePage() {
 
           <div className="bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 space-y-2">
             <p className="text-xs font-bold text-emerald-400">
-              ✓ Garantía de Cero Comisiones Fixo
+              ✓ Garantía de Cero Comisiones Chambitas
             </p>
             <p className="text-[11px] text-slate-400 leading-relaxed">
               Cualquier persona que escanee tu código QR te mandará mensaje directo a tu WhatsApp personal sin intermediación ni retención de tu dinero.

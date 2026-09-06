@@ -25,7 +25,7 @@ export default function WhatsAppButton({
   const [isPending, startTransition] = useTransition();
 
   const formattedPhone = formatWhatsAppPhone(phone);
-  const defaultMessage = `Hola ${technicianName}, vi tu perfil en Fixo y me gustaría cotizar un servicio.`;
+  const defaultMessage = `Hola ${technicianName}, vi tu perfil en Chambitas y me gustaría cotizar un servicio.`;
   const encodedMessage = encodeURIComponent(customText || defaultMessage);
   const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
 

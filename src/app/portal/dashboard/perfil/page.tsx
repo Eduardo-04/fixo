@@ -13,8 +13,10 @@ export default function EditProfilePage() {
   
   // Perfil
   const [userId, setUserId] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [role, setRole] = useState<string>('technician');
   const [bio, setBio] = useState('');
   const [experienceYears, setExperienceYears] = useState('1');
   const [emitsCfdi, setEmitsCfdi] = useState(false);
@@ -48,6 +50,7 @@ export default function EditProfilePage() {
       
       if (user) {
         setUserId(user.id);
+        if (user.email) setEmail(user.email);
         // Cargar perfil y su categoría principal
         const { data: profile } = await supabase
           .from('profiles')
@@ -58,6 +61,7 @@ export default function EditProfilePage() {
         if (profile) {
           setFullName(profile.full_name || '');
           setPhone(profile.phone_whatsapp || '');
+          setRole(profile.role || 'technician');
           setBio(profile.bio || '');
           setExperienceYears((profile.experience_years || 1).toString());
           setEmitsCfdi(profile.emits_cfdi || false);
@@ -175,9 +179,22 @@ export default function EditProfilePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-2">
+                Correo Electrónico de la Cuenta
+                <span className="bg-slate-200/50 text-slate-500 px-2 py-0.5 rounded-full text-[10px]">No modificable</span>
+              </label>
+              <input
+                type="email"
+                disabled
+                value={email}
+                className="w-full px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-500 cursor-not-allowed"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Nombre Completo o Razón Social
+                Nombre Completo {role !== 'client' && 'o Razón Social'}
               </label>
               <input
                 type="text"
@@ -190,92 +207,100 @@ export default function EditProfilePage() {
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Especialidad / Oficio Principal
-              </label>
-              <select
-                required
-                value={selectedCategoryId}
-                onChange={(e) => setSelectedCategoryId(e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
-              >
-                <option value="" disabled>-- Selecciona un oficio --</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                 Teléfono WhatsApp (+52...)
               </label>
               <input
                 type="text"
-                required
+                required={role !== 'client'}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Años de Experiencia
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="50"
-                value={experienceYears}
-                onChange={(e) => setExperienceYears(e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
-              />
-            </div>
-            
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                Facturación (CFDI)
-              </label>
-              <div className="flex items-center gap-3 pt-2">
-                <input
-                  type="checkbox"
-                  id="cfdiToggle"
-                  checked={emitsCfdi}
-                  onChange={(e) => setEmitsCfdi(e.target.checked)}
-                  className="rounded border-slate-300 text-brand-primary focus:ring-brand-primary h-5 w-5"
-                />
-                <label htmlFor="cfdiToggle" className="text-xs text-slate-700 font-semibold cursor-pointer">
-                  Emite factura fiscal válida ante el SAT
+            {role !== 'client' && (
+              <>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Especialidad / Oficio Principal
+                  </label>
+                  <select
+                    required
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                  >
+                    <option value="" disabled>-- Selecciona un oficio --</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Años de Experiencia
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={experienceYears}
+                    onChange={(e) => setExperienceYears(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                  />
+                </div>
+                
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Facturación (CFDI)
+                  </label>
+                  <div className="flex items-center gap-3 pt-2">
+                    <input
+                      type="checkbox"
+                      id="cfdiToggle"
+                      checked={emitsCfdi}
+                      onChange={(e) => setEmitsCfdi(e.target.checked)}
+                      className="rounded border-slate-300 text-brand-primary focus:ring-brand-primary h-5 w-5"
+                    />
+                    <label htmlFor="cfdiToggle" className="text-xs text-slate-700 font-semibold cursor-pointer">
+                      Emite factura fiscal válida ante el SAT
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {role !== 'client' && (
+            <>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Colonias o Zonas de Cobertura (Separadas por comas)
                 </label>
+                <input
+                  type="text"
+                  value={neighborhoods}
+                  onChange={(e) => setNeighborhoods(e.target.value)}
+                  placeholder="Ej. Terán, Plan de Ayala, Las Palmas, Moctezuma"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                />
               </div>
-            </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-              Colonias o Zonas de Cobertura (Separadas por comas)
-            </label>
-            <input
-              type="text"
-              value={neighborhoods}
-              onChange={(e) => setNeighborhoods(e.target.value)}
-              placeholder="Ej. Terán, Plan de Ayala, Las Palmas, Moctezuma"
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-              Descripción de tus Servicios y Garantía (Bio)
-            </label>
-            <textarea
-              rows={4}
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Detalla tus especialidades, tipos de equipos que reparas, refacciones originales..."
-              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
-            />
-          </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Descripción de tus Servicios y Garantía (Bio)
+                </label>
+                <textarea
+                  rows={4}
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Detalla tus especialidades, tipos de equipos que reparas, refacciones originales..."
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                />
+              </div>
+            </>
+          )}
 
           <div className="pt-4 border-t border-slate-100 flex justify-end">
             <button

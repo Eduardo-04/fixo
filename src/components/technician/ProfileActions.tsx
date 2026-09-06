@@ -10,19 +10,13 @@ export default function ProfileActions() {
     <>
       <div className="flex items-center gap-3 w-full mt-4">
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
+          }}
           className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-3 rounded-xl transition-colors text-sm"
         >
           <MessageSquare className="w-4 h-4" />
           <span>Dejar Reseña</span>
-        </button>
-        
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 border border-transparent text-slate-700 font-bold px-4 py-3 rounded-xl transition-colors text-sm"
-          title="Guardar en Favoritos"
-        >
-          <Heart className="w-4 h-4" />
         </button>
       </div>
 

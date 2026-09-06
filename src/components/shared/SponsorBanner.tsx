@@ -37,7 +37,7 @@ export default function SponsorBanner({
           query = query.eq('category_id', categoryId);
         }
         
-        const { data, error } = await query.limit(1).single();
+        const { data, error } = await query.limit(1).maybeSingle();
         if (data) {
           setBanner(data);
         }

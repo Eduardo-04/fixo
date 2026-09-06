@@ -114,7 +114,7 @@ export default function VerificationPage() {
         <div className="text-xs text-emerald-900 space-y-1">
           <p className="font-bold">Tus documentos están 100% protegidos y privados</p>
           <p className="text-emerald-700 leading-relaxed">
-            Se almacenan en un bucket privado de Supabase (`private-docs`). Solo el equipo de administración de Fixo tiene acceso para validar tu identidad. Jamás se compartirán de forma pública.
+            Se almacenan en un bucket privado de Supabase (`private-docs`). Solo el equipo de administración de Chambitas tiene acceso para validar tu identidad. Jamás se compartirán de forma pública.
           </p>
         </div>
       </div>

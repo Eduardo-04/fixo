@@ -15,7 +15,7 @@ interface CategoryPageProps {
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   if (params.slug === 'todos') {
     return {
-      title: 'Todos los Técnicos y Oficios en Chiapas | Fixo',
+      title: 'Todos los Técnicos y Oficios en Chiapas | Chambitas',
       description: 'Explora todos los prestadores de servicios técnicos verificados en Tuxtla Gutiérrez y Chiapas.',
     };
   }
@@ -27,10 +27,10 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     .eq('slug', params.slug)
     .single();
 
-  if (!category) return { title: 'Oficio no encontrado | Fixo' };
+  if (!category) return { title: 'Oficio no encontrado | Chambitas' };
 
   return {
-    title: `${category.name} en Tuxtla Gutiérrez | Técnicos Verificados | Fixo`,
+    title: `${category.name} en Tuxtla Gutiérrez | Técnicos Verificados | Chambitas`,
     description: `Encuentra técnicos certificados en ${category.name} en Tuxtla Gutiérrez, Chiapas. Cotiza por WhatsApp y verifica credenciales oficiales.`,
   };
 }
@@ -66,7 +66,7 @@ export default async function CategoryDirectoryPage({ params, searchParams }: Ca
 
   // Filtro de categoría
   if (!isAll && category) {
-    query = query.eq('technician_categories.categories.slug', category.slug);
+    query = query.eq('technician_categories.category_id', category.id);
   }
 
   // Filtros de UI

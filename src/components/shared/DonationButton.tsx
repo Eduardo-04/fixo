@@ -17,7 +17,7 @@ export default function DonationButton() {
       <div className="flex-1 max-w-2xl text-center md:text-left">
         <h4 className="text-base sm:text-lg font-bold text-white mb-2 flex items-center justify-center md:justify-start gap-2">
           <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
-          <span>Apoya a Fixo y ayúdanos a crecer</span>
+          <span>Apoya a Chambitas y ayúdanos a crecer</span>
         </h4>
         <p className="text-sm text-slate-400 leading-relaxed">
           ¿Nuestra plataforma te ayudó a encontrar al técnico ideal o a conseguir un nuevo cliente hoy? Ayúdanos a mantener la plataforma viva y <strong>siempre libre de comisiones</strong> invitándonos un café.

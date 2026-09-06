@@ -144,18 +144,18 @@ export default function AdminBannersPage() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto py-8 px-4">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 font-mono">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
           Banners de Patrocinadores Locales
         </h1>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Gestiona los espacios publicitarios locales, monitorea sus métricas y edita sus enlaces sin perder el historial.
         </p>
       </div>
 
       {/* Formulario de Alta/Edición de Banner */}
-      <div className={`bg-white rounded-3xl border ${editingBannerId ? 'border-brand-primary shadow-md shadow-brand-primary/10' : 'border-slate-200'} p-6 sm:p-8 shadow-sm transition-all`}>
+      <div className={`bg-white dark:bg-slate-950 rounded-3xl border ${editingBannerId ? 'border-brand-primary shadow-md shadow-brand-primary/10' : 'border-slate-200 dark:border-slate-800'} p-6 sm:p-8 shadow-sm transition-all`}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             {editingBannerId ? (
               <>
                 <Pencil className="w-5 h-5 text-brand-primary" />
@@ -187,7 +187,7 @@ export default function AdminBannersPage() {
                 value={sponsorName}
                 onChange={(e) => setSponsorName(e.target.value)}
                 placeholder="Ej. Mandiola Materiales"
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               />
             </div>
             
@@ -201,7 +201,7 @@ export default function AdminBannersPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Ej. 15% de descuento enseñando tu perfil Fixo"
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               />
             </div>
 
@@ -212,7 +212,7 @@ export default function AdminBannersPage() {
               <select
                 value={placement}
                 onChange={(e) => setPlacement(e.target.value as any)}
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               >
                 <option value="home_top">Home Superior (Principal)</option>
                 <option value="category_middle">Directorio / Intermedio de Categoría</option>
@@ -227,7 +227,7 @@ export default function AdminBannersPage() {
               <select
                 value={aspectRatio}
                 onChange={(e) => setAspectRatio(e.target.value as any)}
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               >
                 <option value="horizontal">Horizontal (Banner Ancho)</option>
                 <option value="square">Cuadrado (Bloque)</option>
@@ -245,7 +245,7 @@ export default function AdminBannersPage() {
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
                 placeholder="https://wa.me/52961..."
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               />
             </div>
 
@@ -259,7 +259,7 @@ export default function AdminBannersPage() {
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               />
             </div>
             
@@ -272,7 +272,7 @@ export default function AdminBannersPage() {
                 required
                 value={endsAt}
                 onChange={(e) => setEndsAt(e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               />
             </div>
           </div>
@@ -304,14 +304,14 @@ export default function AdminBannersPage() {
             {banners.map((banner) => (
               <div
                 key={banner.id}
-                className={`bg-white rounded-2xl border ${!banner.is_active ? 'border-dashed border-slate-300 opacity-60' : 'border-slate-200'} p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4`}
+                className={`bg-white dark:bg-slate-950 rounded-2xl border ${!banner.is_active ? 'border-dashed border-slate-300 dark:border-slate-700 opacity-60' : 'border-slate-200 dark:border-slate-800'} p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4`}
               >
                 <div className="flex items-center gap-4 w-full sm:w-auto">
                   <div className="w-28 h-16 rounded-xl overflow-hidden bg-slate-900 shrink-0 relative">
                     <img src={banner.banner_image_url} alt={banner.sponsor_name} referrerPolicy="no-referrer" className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                       {banner.sponsor_name}
                       {!banner.is_active && <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase">Pausado</span>}
                     </h4>
@@ -330,10 +330,10 @@ export default function AdminBannersPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                <div className="flex items-center gap-6 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 dark:border-slate-800">
                   <div className="text-center">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Impresiones</span>
-                    <span className="text-sm font-black text-slate-900 font-mono">{banner.impressions}</span>
+                    <span className="text-sm font-black text-slate-900 dark:text-slate-100 font-mono">{banner.impressions}</span>
                   </div>
                   <div className="text-center">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Clics</span>
@@ -347,7 +347,7 @@ export default function AdminBannersPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-3 sm:pt-0 sm:pl-4 sm:border-l border-slate-100 mt-2 sm:mt-0 w-full sm:w-auto">
+                <div className="flex items-center gap-2 pt-3 sm:pt-0 sm:pl-4 sm:border-l border-slate-100 dark:border-slate-800 mt-2 sm:mt-0 w-full sm:w-auto">
                   <button
                     onClick={() => handleToggleActive(banner.id, banner.is_active)}
                     className="w-full sm:w-auto px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"

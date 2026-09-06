@@ -14,7 +14,7 @@ export default function Footer() {
                 <Wrench className="w-4 h-4 text-white" />
               </div>
               <span className="text-xl font-black text-white font-mono">
-                FIXO<span className="text-brand-primary">.</span>
+                CHAMBITAS<span className="text-brand-primary">.</span>
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -33,27 +33,27 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/oficios/climas-refrigeracion" className="hover:text-brand-primary transition-colors">
+                <Link href="/oficios/todos?q=climas" className="hover:text-brand-primary transition-colors">
                   Climas y Minisplits
                 </Link>
               </li>
               <li>
-                <Link href="/oficios/plomeria" className="hover:text-brand-primary transition-colors">
+                <Link href="/oficios/todos?q=plomeria" className="hover:text-brand-primary transition-colors">
                   Plomería y Fugas de Agua
                 </Link>
               </li>
               <li>
-                <Link href="/oficios/electricidad" className="hover:text-brand-primary transition-colors">
+                <Link href="/oficios/todos?q=electricidad" className="hover:text-brand-primary transition-colors">
                   Electricidad Residencial
                 </Link>
               </li>
               <li>
-                <Link href="/oficios/cerrajeria" className="hover:text-brand-primary transition-colors">
+                <Link href="/oficios/todos?q=cerrajeria" className="hover:text-brand-primary transition-colors">
                   Cerrajería 24 Horas
                 </Link>
               </li>
               <li>
-                <Link href="/oficios/mecanica" className="hover:text-brand-primary transition-colors">
+                <Link href="/oficios/todos?q=mecanica" className="hover:text-brand-primary transition-colors">
                   Mecánica a Domicilio
                 </Link>
               </li>
@@ -68,7 +68,7 @@ export default function Footer() {
             <ul className="space-y-2 text-xs">
               <li>
                 <Link href="/portal/login?mode=register" className="hover:text-brand-primary transition-colors flex items-center gap-1">
-                  <span>Crear mi Perfil Fixo</span>
+                  <span>Crear mi Perfil Chambitas</span>
                   <span className="text-[10px] bg-brand-primary/20 text-brand-primary px-1 rounded">Gratis</span>
                 </Link>
               </li>
@@ -101,9 +101,6 @@ export default function Footer() {
                 <MapPin className="w-3.5 h-3.5 text-brand-primary shrink-0" />
                 <span>Tuxtla Gutiérrez, Chiapas</span>
               </div>
-              <p className="text-[11px] text-slate-400">
-                Terán, Plan de Ayala, Las Palmas, Moctezuma, Centro, Copoya, Chiapa de Corzo y Berriozábal.
-              </p>
               <div className="pt-2">
                 <Link
                   href="/admin"
@@ -122,7 +119,7 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} Fixo. Todos los derechos reservados.</p>
+          <p>© {new Date().getFullYear()} Chambitas. Todos los derechos reservados.</p>
           <p className="flex items-center gap-1 text-slate-400">
             Hecho con <Heart className="w-3 h-3 text-brand-primary inline fill-brand-primary" /> para los oficios de Chiapas.
           </p>

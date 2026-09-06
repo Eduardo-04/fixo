@@ -18,6 +18,8 @@ import WhatsAppButton from '@/components/shared/WhatsAppButton';
 import ProfileActions from '@/components/technician/ProfileActions';
 import QRCodeCard from '@/components/technician/QRCodeCard';
 import PortfolioGrid from '@/components/technician/PortfolioGrid';
+import ReviewsSection from '@/components/technician/ReviewsSection';
+import FavoriteButton from '@/components/technician/FavoriteButton';
 import { trackProfileView } from '@/app/actions';
 
 interface TechnicianProfileProps {
@@ -33,15 +35,15 @@ export async function generateMetadata({ params }: TechnicianProfileProps): Prom
     .eq('role', 'technician')
     .single();
 
-  if (!tech) return { title: 'Técnico no encontrado | Fixo' };
+  if (!tech) return { title: 'Técnico no encontrado | Chambitas' };
 
   const categoryNames = tech.technician_categories?.map((tc: any) => tc.categories.name).join(', ') || 'Servicios Técnicos';
 
   return {
-    title: `${tech.full_name} - ${categoryNames} en Tuxtla Gutiérrez | Fixo`,
+    title: `${tech.full_name} - ${categoryNames} en Tuxtla Gutiérrez | Chambitas`,
     description: `${tech.bio || 'Técnico verificado en Tuxtla Gutiérrez.'} Contacta directo por WhatsApp o escanea su tarjeta digital QR.`,
     openGraph: {
-      title: `${tech.full_name} | ${categoryNames} en Fixo`,
+      title: `${tech.full_name} | ${categoryNames} en Chambitas`,
       description: `Especialista con ${tech.experience_years || 1} años de experiencia en Tuxtla Gutiérrez. Cotiza por WhatsApp.`,
       images: tech.avatar_url ? [{ url: tech.avatar_url }] : [],
     },
@@ -59,7 +61,11 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
       technician_categories(
         categories(name)
       ),
-      portfolio_items(*)
+      portfolio_items(*),
+      reviews!reviews_profile_id_fkey(
+        *,
+        reviewer:profiles!reviews_reviewer_id_fkey(full_name)
+      )
     `)
     .eq('slug', params.slug)
     .eq('role', 'technician')
@@ -76,7 +82,7 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
   const categoryNames = tech.technician_categories?.map((tc: any) => tc.categories?.name).join(' • ') || 'Servicios Técnicos';
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-24">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen pb-24 transition-colors duration-300">
       {/* Botón flotante de WhatsApp en móviles/escritorio */}
       <WhatsAppButton
         phone={tech.phone_whatsapp}
@@ -103,7 +109,7 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* TARJETA PRINCIPAL DEL TÉCNICO */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm relative overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm relative overflow-hidden">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             {/* Avatar */}
             <div className="relative shrink-0">
@@ -115,7 +121,7 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-slate-800 text-white flex items-center justify-center font-bold text-3xl font-mono">
+                  <div className="w-full h-full bg-slate-800 dark:bg-slate-950 text-white flex items-center justify-center font-bold text-3xl font-mono">
                     {tech.full_name.charAt(0)}
                   </div>
                 )}
@@ -146,7 +152,7 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 font-mono">
                 {tech.full_name}
               </h1>
 
@@ -158,8 +164,8 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
                 <div className="flex items-center text-amber-400">
                   <Star className="w-5 h-5 fill-current" />
                 </div>
-                <span className="text-lg font-black text-slate-900">{tech.rating_average?.toFixed(1) || '5.0'}</span>
-                <span className="text-sm font-medium text-slate-500 underline decoration-slate-300 underline-offset-2 cursor-pointer hover:text-slate-700">
+                <span className="text-lg font-black text-slate-900 dark:text-slate-100">{tech.rating_average?.toFixed(1) || '5.0'}</span>
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400 underline decoration-slate-300 dark:decoration-slate-700 underline-offset-2 cursor-pointer hover:text-slate-700 dark:hover:text-slate-300">
                   {tech.reviews_count || 0} reseñas verificadas
                 </span>
               </div>
@@ -178,24 +184,27 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
 
             {/* CTA WhatsApp Principal y Acciones */}
             <div className="w-full sm:w-auto sm:min-w-[200px] shrink-0 pt-4 sm:pt-0 flex flex-col gap-2">
-              <WhatsAppButton
-                phone={tech.phone_whatsapp}
-                technicianName={tech.full_name}
-                profileId={tech.id}
-                variant="primary"
-                className="w-full"
-              />
+              <div className="flex gap-2">
+                <WhatsAppButton
+                  phone={tech.phone_whatsapp}
+                  technicianName={tech.full_name}
+                  profileId={tech.id}
+                  variant="primary"
+                  className="flex-1"
+                />
+                <FavoriteButton technicianId={tech.id} />
+              </div>
               <ProfileActions />
             </div>
           </div>
 
           {/* Biografía / Descripción del Servicio */}
           {tech.bio && (
-            <div className="mt-6 pt-6 border-t border-slate-100">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+            <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
                 Acerca de mis servicios
               </h3>
-              <p className="text-sm text-slate-700 leading-relaxed">
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                 {tech.bio}
               </p>
             </div>
@@ -228,10 +237,10 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 font-mono">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 font-mono">
                   Trabajos Realizados
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Fotografías comprobables de reparaciones e instalaciones
                 </p>
               </div>
@@ -259,16 +268,24 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
             />
 
             {/* Garantía de Trato Directo */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-3">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-3">
               <div className="flex items-center gap-2 text-brand-primary font-bold text-xs uppercase tracking-wider">
                 <Sparkles className="w-4 h-4" />
                 <span>Trato 100% Directo</span>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                En Fixo no cobramos comisiones por mano de obra. Todo el acuerdo, pago y garantía lo tratas directamente con el técnico por WhatsApp.
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                En Chambitas no cobramos comisiones por mano de obra. Todo el acuerdo, pago y garantía lo tratas directamente con el técnico por WhatsApp.
               </p>
             </div>
           </div>
+        </div>
+
+        {/* SECCIÓN DE RESEÑAS */}
+        <div id="reviews-section" className="pt-8 border-t border-slate-200">
+          <ReviewsSection 
+            profileId={tech.id} 
+            initialReviews={tech.reviews?.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || []} 
+          />
         </div>
       </div>
     </div>

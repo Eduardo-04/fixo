@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ShieldCheck, Image as ImageIcon, Users, ArrowLeft, BarChart3, Megaphone } from 'lucide-react';
+import AdminLogoutButton from './AdminLogoutButton';
 
 export default function AdminLayout({
   children,
@@ -7,12 +8,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex flex-col md:flex-row transition-colors duration-300">
       <aside className="w-full md:w-64 bg-slate-900 border-r border-slate-800 text-white p-5 flex flex-col justify-between shrink-0">
         <div className="space-y-6">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-brand-primary bg-orange-500/20 px-2 py-0.5 rounded">
-              Super Admin Fixo
+              Super Admin Chambitas
             </span>
             <h2 className="text-lg font-black font-mono mt-1">Panel de Control</h2>
           </div>
@@ -57,6 +58,7 @@ export default function AdminLayout({
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Volver al sitio público</span>
           </Link>
+          <AdminLogoutButton />
         </div>
       </aside>
 

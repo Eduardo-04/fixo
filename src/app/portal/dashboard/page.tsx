@@ -25,6 +25,9 @@ export default async function DashboardSummaryPage() {
     .limit(1);
     
   const activeAnnouncement = announcements?.[0];
+  if (activeAnnouncement && activeAnnouncement.title.includes('FIXO')) {
+    activeAnnouncement.title = activeAnnouncement.title.replace('FIXO', 'CHAMBITAS');
+  }
 
   if (!tech) {
     // Si la cuenta existe en auth pero no en profiles (ej. cuentas viejas fallidas), lo auto-creamos:
@@ -55,6 +58,23 @@ export default async function DashboardSummaryPage() {
     
     // Recargar la página para mostrar el dashboard con el perfil recién creado
     redirect('/portal/dashboard');
+  }
+
+  if (tech.role === 'client') {
+    return (
+      <div className="space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
+              Hola, {tech.full_name.split(' ')[0]} 👋
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Bienvenido a tu panel de cliente. Utiliza el menú lateral para gestionar tus reseñas y técnicos favoritos.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const conversionRate = ((tech.whatsapp_clicks / (tech.views_count || 1)) * 100).toFixed(1);
@@ -98,10 +118,10 @@ export default async function DashboardSummaryPage() {
       )}
 
       {/* Saludo y Estado */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 font-mono">
               Hola, {tech.full_name.split(' ')[0]} 👋
             </h1>
             {tech.is_pro && (
@@ -110,7 +130,7 @@ export default async function DashboardSummaryPage() {
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Aquí está el rendimiento de tu tarjeta digital y perfil en Tuxtla Gutiérrez.
           </p>
         </div>
@@ -129,7 +149,7 @@ export default async function DashboardSummaryPage() {
       {/* Tarjetas de Métricas Atómicas */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {/* Vistas de Perfil */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <div className="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Vistas de Perfil
@@ -138,7 +158,7 @@ export default async function DashboardSummaryPage() {
               <Eye className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 font-mono">
+          <p className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono">
             {tech.views_count}
           </p>
           <p className="text-[11px] text-slate-500 flex items-center gap-1">
@@ -148,7 +168,7 @@ export default async function DashboardSummaryPage() {
         </div>
 
         {/* Clics de WhatsApp */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <div className="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Contactos a WhatsApp
@@ -157,7 +177,7 @@ export default async function DashboardSummaryPage() {
               <MessageCircle className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 font-mono">
+          <p className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono">
             {tech.whatsapp_clicks}
           </p>
           <p className="text-[11px] text-slate-500 flex items-center gap-1">
@@ -167,7 +187,7 @@ export default async function DashboardSummaryPage() {
         </div>
 
         {/* Tasa de Conversión */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+        <div className="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
               Tasa de Conversión
@@ -176,7 +196,7 @@ export default async function DashboardSummaryPage() {
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 font-mono">
+          <p className="text-3xl font-black text-slate-900 dark:text-slate-100 font-mono">
             {conversionRate}%
           </p>
           <p className="text-[11px] text-slate-500">
@@ -186,14 +206,14 @@ export default async function DashboardSummaryPage() {
       </div>
 
       {/* Estado de la Verificación Oficial INE */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Insignia Oficial de Verificación
               </h3>
               <p className="text-xs text-slate-500">
@@ -207,8 +227,8 @@ export default async function DashboardSummaryPage() {
           </span>
         </div>
 
-        <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-          Los técnicos con INE verificado aparecen en las primeras posiciones del buscador de Fixo y generan un <strong>3.2x más de contactos por WhatsApp</strong> al brindar mayor confianza a familias y comercios de Chiapas.
+        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800">
+          Los técnicos con INE verificado aparecen en las primeras posiciones del buscador de Chambitas y generan un <strong>3.2x más de contactos por WhatsApp</strong> al brindar mayor confianza a familias y comercios de Chiapas.
         </p>
       </div>
     </div>

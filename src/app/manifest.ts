@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
  
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Fixo - La Red de Tus Mejores Chambas',
-    short_name: 'Fixo',
+    name: 'Chambitas - La Red de Tus Mejores Chambas',
+    short_name: 'Chambitas',
     description: 'Encuentra a los mejores técnicos y oficios en Tuxtla Gutiérrez, Chiapas.',
     start_url: '/',
     display: 'standalone',

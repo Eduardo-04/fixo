@@ -34,7 +34,7 @@ export default function QRCodeCard({
   const [copied, setCopied] = useState(false);
 
   // URL canónica del perfil
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://fixo.com.mx';
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://chambitas.shop';
   const profileUrl = `${baseUrl}/t/${slug}`;
 
   // Descarga del canvas como imagen PNG
@@ -55,7 +55,7 @@ export default function QRCodeCard({
     ctx.fillStyle = '#0F172A'; // Slate 900
     ctx.fillRect(0, 0, 800, 1200);
 
-    // Cabecera Fixo
+    // Cabecera Chambitas
     ctx.fillStyle = '#EA580C'; // Primary Amber
     ctx.fillRect(0, 0, 800, 24);
 
@@ -63,7 +63,7 @@ export default function QRCodeCard({
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 52px system-ui, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('FIXO.', 400, 110);
+    ctx.fillText('CHAMBITAS.', 400, 110);
 
     ctx.fillStyle = '#94A3B8';
     ctx.font = '500 22px system-ui, sans-serif';
@@ -112,7 +112,7 @@ export default function QRCodeCard({
     ctx.fillText('✓ Escanea con tu celular para ver mis trabajos y contactarme', 400, currentY);
 
     const link = document.createElement('a');
-    link.download = `Fixo-Tarjeta-QR-${slug}.png`;
+    link.download = `Chambitas-Tarjeta-QR-${slug}.png`;
     link.href = compositeCanvas.toDataURL('image/png');
     link.click();
   };
@@ -140,7 +140,7 @@ export default function QRCodeCard({
         </div>
 
         <span className="text-[10px] font-bold uppercase tracking-wider bg-brand-primary/20 text-brand-primary px-2.5 py-1 rounded-md border border-brand-primary/30">
-          Oficial Fixo
+          Oficial Chambitas
         </span>
       </div>
 
