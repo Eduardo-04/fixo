@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShieldCheck, Image as ImageIcon, Users, ArrowLeft, BarChart3, Megaphone } from 'lucide-react';
+import { ShieldCheck, Image as ImageIcon, Users, ArrowLeft, BarChart3, Megaphone, ShieldAlert } from 'lucide-react';
 import AdminLogoutButton from './AdminLogoutButton';
 
 export default function AdminLayout({
@@ -46,6 +46,13 @@ export default function AdminLayout({
             >
               <ImageIcon className="w-4 h-4 text-blue-400" />
               <span>Banners Patrocinadores</span>
+            </Link>
+            <Link
+              href="/admin/reportes"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            >
+              <ShieldAlert className="w-4 h-4 text-red-400" />
+              <span>Reportes de Usuarios</span>
             </Link>
           </nav>
         </div>

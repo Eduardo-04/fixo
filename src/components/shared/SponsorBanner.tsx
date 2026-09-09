@@ -37,9 +37,11 @@ export default function SponsorBanner({
           query = query.eq('category_id', categoryId);
         }
         
-        const { data, error } = await query.limit(1).maybeSingle();
-        if (data) {
-          setBanner(data);
+        const { data, error } = await query;
+        if (data && data.length > 0) {
+          // Rotación aleatoria: escoge un banner al azar de los disponibles
+          const randomIndex = Math.floor(Math.random() * data.length);
+          setBanner(data[randomIndex]);
         }
       }
     }

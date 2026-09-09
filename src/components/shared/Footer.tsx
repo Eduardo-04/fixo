@@ -91,20 +91,41 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Columna 4: Cobertura Local */}
+          {/* Columna 4: Cobertura Local & Contacto */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 mb-3">
-              Cobertura Inicial
+              Cobertura y Contacto
             </h4>
-            <div className="space-y-2 text-xs">
+            <div className="space-y-4 text-xs">
               <div className="flex items-center gap-1.5 text-slate-300">
                 <MapPin className="w-3.5 h-3.5 text-brand-primary shrink-0" />
                 <span>Tuxtla Gutiérrez, Chiapas</span>
               </div>
-              <div className="pt-2">
+              
+              <div className="pt-2 border-t border-slate-800">
+                <h5 className="text-[10px] font-bold uppercase text-slate-500 mb-1.5">¿Quieres anunciarte?</h5>
+                <a href="mailto:fixoarregla@gmail.com" className="text-brand-accent hover:text-brand-accent/80 transition-colors font-medium">
+                  fixoarregla@gmail.com
+                </a>
+                <p className="text-[10px] text-slate-500 mt-1">Patrocinios y Banners Destacados</p>
+              </div>
+
+              <div className="pt-2 flex flex-col gap-2 mt-2">
+                <Link
+                  href="/privacidad"
+                  className="inline-block text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  Aviso de Privacidad
+                </Link>
+                <Link
+                  href="/terminos"
+                  className="inline-block text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  Términos y Condiciones
+                </Link>
                 <Link
                   href="/admin"
-                  className="inline-block text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+                  className="inline-block text-[11px] text-slate-500 hover:text-slate-300 transition-colors pt-2 border-t border-slate-800"
                 >
                   Panel de Administración
                 </Link>

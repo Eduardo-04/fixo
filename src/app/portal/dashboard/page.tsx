@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Eye, MessageCircle, TrendingUp, ShieldCheck, QrCode, ArrowUpRight, Award } from 'lucide-react';
+import { Eye, MessageCircle, TrendingUp, ShieldCheck, QrCode, ArrowUpRight, Share2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardSummaryPage() {
@@ -136,12 +136,23 @@ export default async function DashboardSummaryPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <a
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Soy técnico verificado en Chambitas. Contáctame directo sin intermediarios aquí: https://chambitas.shop/t/${tech.slug}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 bg-[#25D366] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-[#1ebd59] transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Compartir Perfil</span>
+            <span className="sm:hidden">Compartir</span>
+          </a>
           <Link
             href="/portal/dashboard/mi-qr"
             className="flex items-center gap-1.5 bg-brand-primary text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-brand-primary-hover transition-colors"
           >
             <QrCode className="w-4 h-4" />
-            <span>Ver mi Tarjeta QR</span>
+            <span className="hidden sm:inline">Ver Tarjeta QR</span>
+            <span className="sm:hidden">Mi QR</span>
           </Link>
         </div>
       </div>

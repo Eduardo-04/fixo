@@ -16,7 +16,7 @@ export default function AdminBannersPage() {
   const [description, setDescription] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [placement, setPlacement] = useState<'home_top' | 'category_middle' | 'home_bottom'>('home_top');
+  const [placement, setPlacement] = useState<'home_top' | 'category_middle' | 'home_bottom' | 'search_results'>('home_top');
   const [aspectRatio, setAspectRatio] = useState<'horizontal' | 'vertical' | 'square'>('horizontal');
   const [endsAt, setEndsAt] = useState('2026-12-31');
 
@@ -217,6 +217,7 @@ export default function AdminBannersPage() {
                 <option value="home_top">Home Superior (Principal)</option>
                 <option value="category_middle">Directorio / Intermedio de Categoría</option>
                 <option value="home_bottom">Pie de Página (Cuadrícula)</option>
+                <option value="search_results">Resultados de Búsqueda (Buscador)</option>
               </select>
             </div>
             

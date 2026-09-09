@@ -157,3 +157,34 @@ export async function approveOrRejectVerification(
     return { success: true, status };
   }
 }
+
+/**
+ * Server Action para guardar un reporte de perfil desde la vista pública
+ */
+export async function submitProfileReport(
+  profileId: string,
+  reason: string,
+  details: string,
+  contactEmail?: string
+) {
+  const supabase = createClient();
+  try {
+    const { error } = await supabase.from('profile_reports').insert({
+      profile_id: profileId,
+      reason,
+      details: details || null,
+      contact_email: contactEmail || null,
+    });
+
+    if (error) {
+      console.error('[submitProfileReport] Error insertando reporte:', error);
+      return { success: false, error: 'Ocurrió un error al enviar el reporte. Inténtalo de nuevo más tarde.' };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[submitProfileReport] Exception:', err);
+    return { success: false, error: 'Excepción de red al enviar el reporte.' };
+  }
+}
+

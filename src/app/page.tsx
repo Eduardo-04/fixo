@@ -135,6 +135,11 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* BANNER BOTTOM (GRID) - AHORA ARRIBA DEL CTA */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        <SponsorBannerGrid placement="home_bottom" />
+      </section>
+
       {/* 5. SECCIÓN ¿ERES TÉCNICO? (CALL TO ACTION INDUSTRIAL) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-brand-base via-slate-900 to-slate-800 rounded-3xl p-8 sm:p-12 text-white border border-slate-700 shadow-2xl relative overflow-hidden">
@@ -190,11 +195,6 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* BANNER BOTTOM (GRID) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
-        <SponsorBannerGrid placement="home_bottom" />
       </section>
     </div>
   );

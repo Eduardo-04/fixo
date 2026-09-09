@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, MapPin, FileCheck2, Filter } from 'lucide-react';
+import { Search, MapPin, FileCheck2, Filter, Loader2 } from 'lucide-react';
 
 interface SearchBarProps {
   initialQuery?: string;
@@ -12,16 +12,6 @@ interface SearchBarProps {
   className?: string;
   onFilterChange?: (filters: { query: string; state: string; city: string; cfdiOnly: boolean }) => void;
 }
-
-const LOCATIONS: Record<string, string[]> = {
-  'Chiapas': ['Tuxtla Gutiérrez', 'San Cristóbal de las Casas', 'Tapachula', 'Comitán', 'Chiapa de Corzo'],
-  'Tabasco': ['Villahermosa', 'Cárdenas', 'Comalcalco'],
-  'Oaxaca': ['Oaxaca de Juárez', 'Salina Cruz', 'Juchitán'],
-  'Ciudad de México': ['CDMX'],
-  'Nuevo León': ['Monterrey', 'San Pedro Garza García'],
-  'Jalisco': ['Guadalajara', 'Zapopan', 'Tlaquepaque'],
-};
-const ALL_STATES = Object.keys(LOCATIONS);
 
 export default function SearchBar({
   initialQuery = '',
@@ -36,6 +26,25 @@ export default function SearchBar({
   const [state, setState] = useState(initialState);
   const [city, setCity] = useState(initialCity);
   const [cfdiOnly, setCfdiOnly] = useState(initialCfdiOnly);
+  
+  // API State
+  const [locationsData, setLocationsData] = useState<Record<string, string[]>>({});
+  const [allStates, setAllStates] = useState<string[]>([]);
+  const [isLoadingLocations, setIsLoadingLocations] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/locations')
+      .then(res => res.json())
+      .then(data => {
+        setLocationsData(data);
+        setAllStates(Object.keys(data).sort());
+        setIsLoadingLocations(false);
+      })
+      .catch(err => {
+        console.error('Error cargando API de localizaciones:', err);
+        setIsLoadingLocations(false);
+      });
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,38 +107,49 @@ export default function SearchBar({
         </div>
 
         {/* Selector de Estado */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 min-w-[140px]">
+        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 min-w-[140px] relative">
           <MapPin className="w-4 h-4 text-brand-primary shrink-0" />
           <select
             value={state}
             onChange={(e) => handleStateChange(e.target.value)}
-            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 py-0 pl-0 pr-7 cursor-pointer truncate"
+            disabled={isLoadingLocations}
+            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 py-0 pl-0 pr-7 cursor-pointer truncate disabled:opacity-50"
           >
             <option value="Todos los estados">Todos los estados</option>
-            {ALL_STATES.map((s) => (
+            {allStates.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
             ))}
           </select>
+          {isLoadingLocations && (
+            <div className="absolute right-3 pointer-events-none text-brand-primary">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            </div>
+          )}
         </div>
 
         {/* Selector de Ciudad */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 min-w-[140px]">
+        <div className="flex items-center gap-2 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 min-w-[140px] relative">
           <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
           <select
             value={city}
             onChange={(e) => handleCityChange(e.target.value)}
-            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 py-0 pl-0 pr-7 cursor-pointer truncate"
-            disabled={state === 'Todos los estados'}
+            className="w-full bg-transparent border-0 focus:ring-0 text-xs sm:text-sm text-slate-700 py-0 pl-0 pr-7 cursor-pointer truncate disabled:opacity-50"
+            disabled={state === 'Todos los estados' || isLoadingLocations}
           >
             <option value="Todas las ciudades">Todas las ciudades</option>
-            {state !== 'Todos los estados' && LOCATIONS[state]?.map((c) => (
+            {state !== 'Todos los estados' && locationsData[state]?.sort().map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
           </select>
+          {isLoadingLocations && state !== 'Todos los estados' && (
+            <div className="absolute right-3 pointer-events-none text-slate-400">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            </div>
+          )}
         </div>
 
         {/* Botón Buscar */}

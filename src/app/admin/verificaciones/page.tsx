@@ -12,9 +12,11 @@ interface PendingDoc {
   submittedAt: string;
   frontUrl: string;
   backUrl: string;
+  selfieUrl: string;
   phone: string;
   frontId: string;
   backId: string;
+  selfieId: string;
 }
 
 export default function AdminVerificationsPage() {
@@ -44,6 +46,7 @@ export default function AdminVerificationsPage() {
           const docs = p.verification_documents || [];
           const frontDoc = docs.find((d: any) => d.document_type === 'ine_front');
           const backDoc = docs.find((d: any) => d.document_type === 'ine_back');
+          const selfieDoc = docs.find((d: any) => d.document_type === 'ine_selfie');
           
           if (frontDoc && backDoc) {
             mappedList.push({
@@ -54,8 +57,10 @@ export default function AdminVerificationsPage() {
               submittedAt: new Date(frontDoc.created_at).toLocaleString(),
               frontUrl: frontDoc.document_url,
               backUrl: backDoc.document_url,
+              selfieUrl: selfieDoc ? selfieDoc.document_url : '',
               frontId: frontDoc.id,
-              backId: backDoc.id
+              backId: backDoc.id,
+              selfieId: selfieDoc ? selfieDoc.id : ''
             });
           }
         });
@@ -74,6 +79,9 @@ export default function AdminVerificationsPage() {
     // pero por ahora actualizamos ambos y el profile
     await approveOrRejectVerification(item.frontId, item.profileId, newStatus);
     await approveOrRejectVerification(item.backId, item.profileId, newStatus);
+    if (item.selfieId) {
+      await approveOrRejectVerification(item.selfieId, item.profileId, newStatus);
+    }
     
     setList((prev) => prev.filter((doc) => doc.profileId !== item.profileId));
     setFeedback(action === 'approved' 
@@ -132,11 +140,11 @@ export default function AdminVerificationsPage() {
                 </div>
 
                 {/* Previews de INE */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-3 gap-3 pt-2">
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">Frente INE</span>
                     <div 
-                      className="h-28 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-zoom-in hover:opacity-80 transition-opacity"
+                      className="h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-zoom-in hover:opacity-80 transition-opacity"
                       onClick={() => setSelectedImage(item.frontUrl)}
                     >
                       <img src={item.frontUrl} alt="INE Frente" className="w-full h-full object-cover" />
@@ -145,12 +153,23 @@ export default function AdminVerificationsPage() {
                   <div className="space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase">Reverso INE</span>
                     <div 
-                      className="h-28 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-zoom-in hover:opacity-80 transition-opacity"
+                      className="h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-zoom-in hover:opacity-80 transition-opacity"
                       onClick={() => setSelectedImage(item.backUrl)}
                     >
                       <img src={item.backUrl} alt="INE Reverso" className="w-full h-full object-cover" />
                     </div>
                   </div>
+                  {item.selfieUrl && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">Selfie INE</span>
+                      <div 
+                        className="h-24 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-zoom-in hover:opacity-80 transition-opacity"
+                        onClick={() => setSelectedImage(item.selfieUrl)}
+                      >
+                        <img src={item.selfieUrl} alt="INE Selfie" className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

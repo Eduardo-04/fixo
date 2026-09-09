@@ -51,26 +51,34 @@ export default function PortfolioGrid({ items, onDelete }: PortfolioGridProps) {
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
 
-                {/* Tag Antes / Después */}
+                {/* Selector Antes / Después (Segmented Control) */}
                 {item.is_before_after && item.before_image_url && (
-                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <div 
+                    className="absolute top-3 left-3 flex items-center bg-slate-900/80 backdrop-blur-md p-1 rounded-lg border border-slate-700/50 shadow-lg"
+                    onClick={(e) => e.stopPropagation()} // Prevenir que se abra el modal al clickear el selector
+                  >
                     <button
                       type="button"
-                      onClick={(e) => toggleBefore(item.id, e)}
-                      className="flex items-center gap-1.5 bg-brand-base/90 hover:bg-brand-base text-white text-xs font-bold px-3 py-1.5 rounded-full backdrop-blur-sm border border-slate-700 shadow-md transition-all active:scale-95"
-                    >
-                      <ArrowLeftRight className="w-3.5 h-3.5 text-brand-primary" />
-                      <span>Ver {isShowingBefore ? 'Resultado Final' : 'Antes de la Reparación'}</span>
-                    </button>
-                    <span
-                      className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                        isShowingBefore
-                          ? 'bg-amber-500/90 text-white'
-                          : 'bg-emerald-500/90 text-white'
+                      onClick={() => toggleBefore(item.id)}
+                      className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${
+                        isShowingBefore 
+                          ? 'bg-slate-700 text-white shadow-sm' 
+                          : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      {isShowingBefore ? 'Antes' : 'Después (Terminado)'}
-                    </span>
+                      Antes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleBefore(item.id)}
+                      className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${
+                        !isShowingBefore 
+                          ? 'bg-emerald-600 text-white shadow-sm' 
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Después
+                    </button>
                   </div>
                 )}
               </div>
@@ -131,14 +139,33 @@ export default function PortfolioGrid({ items, onDelete }: PortfolioGridProps) {
           <div className="relative max-w-full max-h-[90vh] flex flex-col items-center">
             {selectedItem.is_before_after && selectedItem.before_image_url && (
               <div className="absolute top-4 flex justify-center w-full z-50">
-                <button
-                  type="button"
-                  onClick={(e) => toggleBefore(selectedItem.id, e)}
-                  className="flex items-center gap-2 bg-brand-base/90 hover:bg-brand-base text-white text-sm font-bold px-5 py-2 rounded-full backdrop-blur-md border border-slate-700 shadow-2xl transition-all active:scale-95"
+                <div 
+                  className="flex items-center bg-slate-900/90 backdrop-blur-lg p-1.5 rounded-xl border border-slate-700/50 shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  <ArrowLeftRight className="w-4 h-4 text-brand-primary" />
-                  <span>Cambiar a {activeBeforeAfter[selectedItem.id] ? 'Resultado Final' : 'Antes de la Reparación'}</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleBefore(selectedItem.id)}
+                    className={`flex items-center gap-1.5 px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
+                      activeBeforeAfter[selectedItem.id]
+                        ? 'bg-slate-700 text-white shadow-md' 
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Antes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleBefore(selectedItem.id)}
+                    className={`flex items-center gap-1.5 px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
+                      !activeBeforeAfter[selectedItem.id]
+                        ? 'bg-emerald-600 text-white shadow-md' 
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Después
+                  </button>
+                </div>
               </div>
             )}
             <img 

@@ -74,12 +74,26 @@ function LoginForm() {
 
         router.push('/portal/dashboard');
       } else {
-        const { error: loginError } = await supabase.auth.signInWithPassword({
+        const { data: authDataLogin, error: loginError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (loginError) throw loginError;
+
+        // Check if admin
+        if (authDataLogin?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', authDataLogin.user.id)
+            .single();
+
+          if (profile?.role === 'admin') {
+            router.push('/admin');
+            return;
+          }
+        }
 
         router.push('/portal/dashboard');
       }

@@ -155,8 +155,8 @@ export default async function CategoryDirectoryPage({ params, searchParams }: Ca
         initialCfdiOnly={searchParams.cfdi === 'true'}
       />
 
-      {/* BANNER PATROCINADOR INTERMEDIO */}
-      <SponsorBanner placement="category_middle" categoryId={category?.id} />
+      {/* Banner Publicitario Dinámico (Búsqueda) */}
+      <SponsorBanner placement="search_results" categoryId={category?.id} />
 
       {/* Lista de Técnicos */}
       {filtered.length > 0 ? (

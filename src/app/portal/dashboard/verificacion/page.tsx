@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 export default function VerificationPage() {
   const [frontDoc, setFrontDoc] = useState<File | null>(null);
   const [backDoc, setBackDoc] = useState<File | null>(null);
+  const [selfieDoc, setSelfieDoc] = useState<File | null>(null);
   const [status, setStatus] = useState<'unverified' | 'pending' | 'verified' | 'rejected'>('unverified');
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -34,7 +35,7 @@ export default function VerificationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!frontDoc || !backDoc) return;
+    if (!frontDoc || !backDoc || !selfieDoc) return;
     
     setIsUploading(true);
     setErrorMsg('');
@@ -50,7 +51,6 @@ export default function VerificationPage() {
         .from('private-docs')
         .upload(frontPath, frontDoc);
       if (frontError) throw frontError;
-      
       const { data: frontUrlData } = await supabase.storage.from('private-docs').createSignedUrl(frontPath, 315360000); // 10 años
 
       // 2. Subir reverso a private-docs
@@ -59,10 +59,17 @@ export default function VerificationPage() {
         .from('private-docs')
         .upload(backPath, backDoc);
       if (backError) throw backError;
-      
       const { data: backUrlData } = await supabase.storage.from('private-docs').createSignedUrl(backPath, 315360000);
 
-      // 3. Insertar registros en verification_documents
+      // 3. Subir selfie a private-docs
+      const selfiePath = `${user.id}/ine_selfie_${Date.now()}.webp`;
+      const { error: selfieError } = await supabase.storage
+        .from('private-docs')
+        .upload(selfiePath, selfieDoc);
+      if (selfieError) throw selfieError;
+      const { data: selfieUrlData } = await supabase.storage.from('private-docs').createSignedUrl(selfiePath, 315360000);
+
+      // 4. Insertar registros en verification_documents
       if (frontUrlData?.signedUrl) {
         await supabase.from('verification_documents').insert({
           profile_id: user.id,
@@ -70,12 +77,18 @@ export default function VerificationPage() {
           document_url: frontUrlData.signedUrl,
         });
       }
-
       if (backUrlData?.signedUrl) {
         await supabase.from('verification_documents').insert({
           profile_id: user.id,
           document_type: 'ine_back',
           document_url: backUrlData.signedUrl,
+        });
+      }
+      if (selfieUrlData?.signedUrl) {
+        await supabase.from('verification_documents').insert({
+          profile_id: user.id,
+          document_type: 'ine_selfie',
+          document_url: selfieUrlData.signedUrl,
         });
       }
 
@@ -158,17 +171,23 @@ export default function VerificationPage() {
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <ImageUploader
-                label="Frente de la Credencial (INE / IFE)"
-                sublabel="Asegúrate de que la foto, nombre y folio sean legibles."
+                label="Frente INE"
+                sublabel="Legible."
                 onFileReady={(file) => setFrontDoc(file)}
               />
 
               <ImageUploader
-                label="Reverso de la Credencial"
-                sublabel="Debe verse la firma y las líneas de captura ópticas."
+                label="Reverso INE"
+                sublabel="Firma visible."
                 onFileReady={(file) => setBackDoc(file)}
+              />
+
+              <ImageUploader
+                label="Selfie con tu INE"
+                sublabel="A la altura de tu rostro."
+                onFileReady={(file) => setSelfieDoc(file)}
               />
             </div>
 
@@ -180,7 +199,7 @@ export default function VerificationPage() {
 
               <button
                 type="submit"
-                disabled={!frontDoc || !backDoc || isUploading}
+                disabled={!frontDoc || !backDoc || !selfieDoc || isUploading}
                 className="bg-brand-primary hover:bg-brand-primary-hover disabled:opacity-40 text-white text-xs font-bold px-6 py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}

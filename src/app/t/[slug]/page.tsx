@@ -20,6 +20,7 @@ import QRCodeCard from '@/components/technician/QRCodeCard';
 import PortfolioGrid from '@/components/technician/PortfolioGrid';
 import ReviewsSection from '@/components/technician/ReviewsSection';
 import FavoriteButton from '@/components/technician/FavoriteButton';
+import ReportProfileModal from '@/components/technician/ReportProfileModal';
 import { trackProfileView } from '@/app/actions';
 
 interface TechnicianProfileProps {
@@ -280,14 +281,52 @@ export default async function TechnicianPublicProfile({ params }: TechnicianProf
           </div>
         </div>
 
-        {/* SECCIÓN DE RESEÑAS */}
         <div id="reviews-section" className="pt-8 border-t border-slate-200">
           <ReviewsSection 
             profileId={tech.id} 
             initialReviews={tech.reviews?.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || []} 
           />
         </div>
+
+        {/* Modal de Reporte */}
+        <div className="max-w-md mx-auto pt-8">
+          <ReportProfileModal profileId={tech.id} />
+        </div>
       </div>
+
+      {/* JSON-LD Schema.org para SEO Local */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ProfessionalService',
+            name: tech.full_name,
+            image: tech.avatar_url || 'https://chambitas.shop/icon-512x512.png',
+            '@id': `https://chambitas.shop/t/${tech.slug}`,
+            url: `https://chambitas.shop/t/${tech.slug}`,
+            telephone: tech.phone_whatsapp,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: tech.city || 'Tuxtla Gutiérrez',
+              addressRegion: 'Chiapas',
+              addressCountry: 'MX'
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: 16.7569, // Coordenadas aproximadas de Tuxtla Gtz
+              longitude: -93.1292
+            },
+            aggregateRating: tech.reviews_count > 0 ? {
+              '@type': 'AggregateRating',
+              ratingValue: tech.rating_average || 5.0,
+              reviewCount: tech.reviews_count
+            } : undefined,
+            priceRange: '$$',
+            description: tech.bio || `Técnico especialista en ${categoryNames} en ${tech.city || 'Tuxtla Gutiérrez'}.`
+          })
+        }}
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ export type Json =
 
 export type UserRole = 'technician' | 'admin';
 export type VerificationStatus = 'unverified' | 'pending' | 'verified' | 'rejected';
-export type BannerPlacement = 'home_top' | 'category_middle' | 'footer';
+export type BannerPlacement = 'home_top' | 'category_middle' | 'home_bottom' | 'footer' | 'search_results';
 
 export interface Profile {
   id: string;
@@ -64,7 +64,7 @@ export interface PortfolioItem {
 export interface VerificationDocument {
   id: string;
   profile_id: string;
-  document_type: 'ine_front' | 'ine_back' | 'address_proof';
+  document_type: 'ine_front' | 'ine_back' | 'address_proof' | 'ine_selfie';
   document_url: string;
   status: VerificationStatus;
   admin_notes: string | null;
@@ -86,6 +86,16 @@ export interface Banner {
   is_active: boolean;
   starts_at: string;
   ends_at: string;
+  created_at: string;
+}
+
+export interface ProfileReport {
+  id: string;
+  profile_id: string;
+  reason: string;
+  details: string | null;
+  contact_email: string | null;
+  status: 'pending' | 'reviewed' | 'resolved';
   created_at: string;
 }
 
@@ -121,6 +131,11 @@ export interface Database {
         Row: Banner;
         Insert: Omit<Banner, 'id' | 'created_at' | 'impressions' | 'clicks'>;
         Update: Partial<Banner>;
+      };
+      profile_reports: {
+        Row: ProfileReport;
+        Insert: Omit<ProfileReport, 'id' | 'created_at' | 'status'>;
+        Update: Partial<ProfileReport>;
       };
     };
     Functions: {
