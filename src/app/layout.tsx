@@ -5,6 +5,7 @@ import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import PWAInstallPrompt from '@/components/shared/PWAInstallPrompt';
+import Analytics from '@/components/shared/Analytics';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -50,6 +51,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className="min-h-screen flex flex-col bg-brand-bg dark:bg-slate-900 text-brand-base dark:text-slate-100 antialiased selection:bg-brand-primary selection:text-white transition-colors duration-300">
+        <Analytics />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
           <main className="flex-1">{children}</main>

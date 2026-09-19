@@ -11,6 +11,14 @@ export default function PortfolioPage() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isPro, setIsPro] = useState(false);
+
+  const FREE_LIMIT = 6;
+  const PRO_LIMIT = 30;
+  
+  // Determina el límite actual basado en si es PRO o no
+  const currentLimit = isPro ? PRO_LIMIT : FREE_LIMIT;
+  const hasReachedLimit = items.length >= currentLimit;
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -21,6 +29,7 @@ export default function PortfolioPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   const [uploadKey, setUploadKey] = useState(Date.now());
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
   useEffect(() => {
     async function loadPortfolio() {
@@ -28,6 +37,8 @@ export default function PortfolioPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
+        
+        // Cargar trabajos
         const { data } = await supabase
           .from('portfolio_items')
           .select('*')
@@ -35,6 +46,15 @@ export default function PortfolioPage() {
           .order('created_at', { ascending: false });
         
         if (data) setItems(data as PortfolioItem[]);
+
+        // Cargar estado PRO
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_pro')
+          .eq('id', user.id)
+          .single();
+          
+        if (profile) setIsPro(profile.is_pro);
       }
       setLoading(false);
     }
@@ -43,7 +63,7 @@ export default function PortfolioPage() {
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mainImage || !userId) return;
+    if (!mainImage || !userId || hasReachedLimit) return;
 
     setIsUploading(true);
     const supabase = createClient();
@@ -119,6 +139,29 @@ export default function PortfolioPage() {
     }
   };
 
+  const handleCheckout = async () => {
+    setIsCheckoutLoading(true);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Hubo un error al generar el link de pago. Inténtalo más tarde.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de conexión.');
+    } finally {
+      setIsCheckoutLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-8 text-center text-slate-500 font-medium">Cargando portafolio...</div>;
   }
@@ -136,10 +179,38 @@ export default function PortfolioPage() {
 
       {/* Formulario de Subida con Compresión */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <PlusCircle className="w-5 h-5 text-brand-primary" />
-          <span>Publicar Nuevo Trabajo Realizado</span>
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <PlusCircle className="w-5 h-5 text-brand-primary" />
+            <span>Publicar Nuevo Trabajo Realizado</span>
+          </h2>
+          
+          {/* Contador de Límite */}
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg ${isPro ? 'bg-amber-100 text-amber-700' : hasReachedLimit ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'}`}>
+            {items.length} de {currentLimit} fotos permitidas {isPro && '(Plan PRO)'}
+          </span>
+        </div>
+
+        {hasReachedLimit && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <h3 className="text-sm font-bold text-red-800 mb-1">¡Límite de Portafolio Alcanzado!</h3>
+            <p className="text-xs text-red-600 mb-3">
+              {isPro 
+                ? `Como usuario PRO, has alcanzado el límite máximo de ${PRO_LIMIT} trabajos. Para mantener la velocidad de la plataforma, por favor elimina un trabajo antiguo si deseas subir uno nuevo.` 
+                : `Las cuentas gratuitas tienen un límite de ${FREE_LIMIT} trabajos. Si deseas subir hasta ${PRO_LIMIT} fotos y destacar tu perfil en las búsquedas, actualiza a Chambitas PRO.`}
+            </p>
+            
+            {!isPro && (
+              <button 
+                onClick={handleCheckout}
+                disabled={isCheckoutLoading}
+                className="bg-[#009EE3] hover:bg-[#0089C7] disabled:opacity-50 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2"
+              >
+                {isCheckoutLoading ? 'Generando link seguro...' : 'Obtener Chambitas PRO por $150 MXN'}
+              </button>
+            )}
+          </div>
+        )}
 
         {successMsg && (
           <div className="mb-4 flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 rounded-xl font-medium">
@@ -211,7 +282,7 @@ export default function PortfolioPage() {
           <div className="flex justify-end pt-3">
             <button
               type="submit"
-              disabled={!mainImage || isUploading}
+              disabled={!mainImage || isUploading || hasReachedLimit}
               className="bg-brand-primary hover:bg-brand-primary-hover disabled:opacity-40 text-white text-xs font-bold px-6 py-3 rounded-xl shadow-md transition-all flex items-center gap-2"
             >
               {isUploading ? 'Subiendo imagen...' : 'Publicar Trabajo en mi Perfil'}

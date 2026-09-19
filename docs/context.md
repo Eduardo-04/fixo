@@ -56,3 +56,26 @@ Para pasar del modo demo al modo real:
    NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key
    SUPABASE_SERVICE_ROLE_KEY=tu-service-role-key
    ```
+
+## Analíticas y Publicidad (Meta Pixel & Google Analytics)
+
+El código base ya cuenta con un componente `Analytics.tsx` inyectado en `layout.tsx` listo para rastrear tráfico y conversiones.
+Para activarlo en el entorno de producción (Vercel) SIN tocar código, es necesario ir a la configuración del proyecto en Vercel -> **Settings** -> **Environment Variables** y agregar:
+
+- `NEXT_PUBLIC_META_PIXEL_ID` (Para Facebook/Instagram Ads)
+- `NEXT_PUBLIC_GA_ID` (Para Google Ads/Analytics)
+
+*Nota: Una vez agregados, es necesario redesplegar (redeploy) en Vercel para que tomen efecto.*
+
+## Últimas Mejoras Implementadas (Septiembre 2026)
+- **SEO Dinámico:** Creación de `sitemap.ts` y `robots.ts` para indexación en Google.
+- **Verificación Avanzada:** Requisito de 3 fotografías (INE Frente, INE Reverso y Selfie sosteniendo INE) para validar la identidad del técnico de forma segura.
+- **Sistema de Reportes:** Botón al final de los perfiles públicos para denunciar perfiles fraudulentos. Creación de panel administrativo para revisar dichos reportes.
+- **Páginas Legales:** Redacción de Aviso de Privacidad y Términos y Condiciones.
+- **Publicidad Equitativa:** Rotación aleatoria de Banners Patrocinadores cuando hay más de un anunciante en la misma posición.
+- **Límites de Almacenamiento (Portafolio):** Para proteger el servidor gratuito de Supabase, las cuentas gratuitas ahora tienen un límite de 6 fotografías en su portafolio, mientras que las cuentas PRO tienen un límite ampliado de 30 fotografías.
+
+## 🚀 Pendientes por Desarrollar (Próximos Pasos)
+- [x] **Automatización de Mercado Pago (Webhooks):** Ruta `/api/webhooks/mercadopago` creada e integrada con el SDK oficial (App configurada como "Suscripciones Chambitas" en MP). Pendiente que el usuario agregue el Webhook en MP y el Access Token en Vercel.
+- [x] **Configuración de Correos en Supabase:** Entrar al panel de Supabase > Auth > URL Configuration y actualizar la *Site URL* y *Redirect URLs* al dominio de producción en Vercel para que funcione correctamente el reseteo de contraseña.
+- [ ] **Expansión de Categorías (Fase 2):** Agregar "Barberías y Estética" o "Belleza y Cuidado Personal" una vez consolidado el nicho de reparaciones del hogar.
