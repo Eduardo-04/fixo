@@ -8,9 +8,11 @@ import SponsorBanner from './SponsorBanner';
 interface SponsorBannerGridProps {
   placement: BannerPlacement;
   categoryId?: number;
+  targetState?: string;
+  targetCity?: string;
 }
 
-export default function SponsorBannerGrid({ placement, categoryId }: SponsorBannerGridProps) {
+export default function SponsorBannerGrid({ placement, categoryId, targetState, targetCity }: SponsorBannerGridProps) {
   const [banners, setBanners] = useState<Banner[]>([]);
   const supabase = createClient();
 
@@ -25,10 +27,23 @@ export default function SponsorBannerGrid({ placement, categoryId }: SponsorBann
       if (categoryId) {
         query = query.eq('category_id', categoryId);
       }
+      
+      // Filtro Geográfico: Si se especifica ciudad, buscar banners de esa ciudad o nacionales (null)
+      if (targetCity && targetCity !== 'Todas las ciudades') {
+        query = query.or(`target_city.is.null,target_city.eq.${targetCity}`);
+      } else if (targetState && targetState !== 'Todos los estados') {
+        query = query.or(`target_state.is.null,target_state.eq.${targetState}`);
+      }
 
       const { data, error } = await query;
       
       if (data) {
+        // Ordenar primero locales, luego nacionales
+        data.sort((a, b) => {
+          if (a.target_city && !b.target_city) return -1;
+          if (!a.target_city && b.target_city) return 1;
+          return 0;
+        });
         setBanners(data);
       }
     }

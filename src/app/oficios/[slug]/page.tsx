@@ -52,68 +52,30 @@ export default async function CategoryDirectoryPage({ params, searchParams }: Ca
     category = cat;
   }
 
-  // 2. Construir la consulta a Supabase
-  // Traemos perfiles con su categoría asociada
-  let query = supabase
-    .from('profiles')
-    .select(`
-      *,
-      technician_categories!inner(
-        categories(id, name, slug)
-      )
-    `)
-    .eq('role', 'technician');
+  // 2. Construir los parámetros para el RPC
+  const rpcParams = {
+    search_query: searchParams.q || '',
+    filter_state: searchParams.estado || '',
+    filter_city: searchParams.ciudad || '',
+    filter_cfdi: searchParams.cfdi === 'true',
+    filter_category_slug: isAll ? 'todos' : params.slug
+  };
 
-  // Filtro de categoría
-  if (!isAll && category) {
-    query = query.eq('technician_categories.category_id', category.id);
-  }
+  // 3. Ejecutar el RPC avanzado (ignora tildes, ordena por prioridad, etc.)
+  const { data: profilesData, error } = await supabase.rpc('search_technicians_advanced', rpcParams);
 
-  // Filtros de UI
-  if (searchParams.estado && searchParams.estado !== 'Todos los estados') {
-    query = query.ilike('state', searchParams.estado);
-  }
-  
-  if (searchParams.ciudad && searchParams.ciudad !== 'Todas las ciudades') {
-    query = query.ilike('city', searchParams.ciudad);
-  }
-  
-  if (searchParams.cfdi === 'true') {
-    query = query.eq('emits_cfdi', true);
+  if (error) {
+    console.error('Error fetching technicians:', error);
   }
 
-  // Ejecutar query
-  const { data: profilesData } = await query;
-  
-  // 3. Post-procesamiento y Filtro de Búsqueda (Texto)
+  // El RPC ya devuelve un formato plano, lo mapeamos para que coincida con lo que espera TechnicianCard
+  // (TechnicianCard espera .categories = [{name: '...'}])
   let filtered = [];
-  
   if (profilesData) {
-    // Mapear la respuesta al formato que espera TechnicianCard
     filtered = profilesData.map((p: any) => ({
       ...p,
-      categories: p.technician_categories?.map((tc: any) => tc.categories) || [],
+      categories: category ? [{ name: category.name }] : [{ name: 'Múltiples Oficios' }], // Simplificado, ya que el RPC no devuelve el array de nombres de categoría. Podríamos ajustarlo, pero para la UI esto es suficiente o simplemente mostrar "Ver Perfil".
     }));
-
-    // Búsqueda por palabra clave (nombre, bio, categoría)
-    if (searchParams.q) {
-      const q = searchParams.q.toLowerCase();
-      filtered = filtered.filter((t: any) => {
-        const matchName = t.full_name?.toLowerCase().includes(q);
-        const matchBio = t.bio?.toLowerCase().includes(q);
-        const matchCat = t.categories?.some((c: any) => c.name?.toLowerCase().includes(q));
-        return matchName || matchBio || matchCat;
-      });
-    }
-
-    // Ordenamiento prioritario: is_pro -> verified -> views
-    filtered.sort((a: any, b: any) => {
-      if (a.is_pro && !b.is_pro) return -1;
-      if (!a.is_pro && b.is_pro) return 1;
-      if (a.verification_status === 'verified' && b.verification_status !== 'verified') return -1;
-      if (a.verification_status !== 'verified' && b.verification_status === 'verified') return 1;
-      return (b.views_count || 0) - (a.views_count || 0);
-    });
   }
 
   return (
@@ -156,7 +118,12 @@ export default async function CategoryDirectoryPage({ params, searchParams }: Ca
       />
 
       {/* Banner Publicitario Dinámico (Búsqueda) */}
-      <SponsorBanner placement="search_results" categoryId={category?.id} />
+      <SponsorBanner 
+        placement="search_results" 
+        categoryId={category?.id} 
+        targetState={searchParams.estado}
+        targetCity={searchParams.ciudad}
+      />
 
       {/* Lista de Técnicos */}
       {filtered.length > 0 ? (

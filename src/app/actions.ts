@@ -72,6 +72,8 @@ export async function updateTechnicianProfile(formData: FormData) {
   const emitsCfdi = formData.get('emitsCfdi') === 'true';
   const avatarUrl = formData.get('avatarUrl') as string | null;
   const categoryId = formData.get('categoryId') as string | null;
+  const state = formData.get('state') as string | null;
+  const city = formData.get('city') as string | null;
   const neighborhoods = (formData.get('neighborhoods') as string || '')
     .split(',')
     .map((s) => s.trim())
@@ -79,17 +81,22 @@ export async function updateTechnicianProfile(formData: FormData) {
 
   if (user) {
     // 1. Actualizar perfil
+    const updatePayload: any = {
+      full_name: fullName,
+      phone_whatsapp: phone,
+      bio,
+      experience_years: experienceYears,
+      emits_cfdi: emitsCfdi,
+      neighborhoods_covered: neighborhoods,
+      updated_at: new Date().toISOString(),
+    };
+    
+    if (avatarUrl) updatePayload.avatar_url = avatarUrl;
+    if (state) updatePayload.state = state;
+    if (city) updatePayload.city = city;
+
     const { error } = await (supabase.from('profiles') as any)
-      .update({
-        full_name: fullName,
-        phone_whatsapp: phone,
-        bio,
-        experience_years: experienceYears,
-        emits_cfdi: emitsCfdi,
-        neighborhoods_covered: neighborhoods,
-        ...(avatarUrl && { avatar_url: avatarUrl }), // Solo si se envió
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', user.id);
 
     if (error) {

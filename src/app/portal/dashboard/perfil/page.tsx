@@ -24,6 +24,12 @@ export default function EditProfilePage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarUrlPreview, setAvatarUrlPreview] = useState<string | null>(null);
   
+  // Ubicación
+  const [state, setState] = useState('Chiapas');
+  const [city, setCity] = useState('Tuxtla Gutiérrez');
+  const [locationsData, setLocationsData] = useState<Record<string, string[]>>({});
+  const [allStates, setAllStates] = useState<string[]>([]);
+  
   // Categorías
   const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
@@ -44,6 +50,16 @@ export default function EditProfilePage() {
           return a.name.localeCompare(b.name);
         });
         setCategories(sortedCats);
+      }
+
+      // Cargar ubicaciones de México
+      try {
+        const res = await fetch('/api/locations');
+        const data = await res.json();
+        setLocationsData(data);
+        setAllStates(Object.keys(data).sort());
+      } catch (err) {
+        console.error('Error cargando locations', err);
       }
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -67,6 +83,8 @@ export default function EditProfilePage() {
           setEmitsCfdi(profile.emits_cfdi || false);
           setNeighborhoods((profile.neighborhoods_covered || []).join(', '));
           setAvatarUrlPreview(profile.avatar_url || null);
+          if (profile.state) setState(profile.state);
+          if (profile.city) setCity(profile.city);
           
           if (profile.technician_categories && profile.technician_categories.length > 0) {
             setSelectedCategoryId(profile.technician_categories[0].category_id.toString());
@@ -107,6 +125,8 @@ export default function EditProfilePage() {
       formData.append('experienceYears', experienceYears);
       formData.append('emitsCfdi', emitsCfdi.toString());
       formData.append('neighborhoods', neighborhoods);
+      formData.append('state', state);
+      formData.append('city', city);
       if (finalAvatarUrl) formData.append('avatarUrl', finalAvatarUrl);
       if (selectedCategoryId) formData.append('categoryId', selectedCategoryId);
 
@@ -270,6 +290,43 @@ export default function EditProfilePage() {
                 </div>
               </>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-t border-slate-100 pt-6">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Estado
+              </label>
+              <select
+                value={state}
+                onChange={(e) => {
+                  setState(e.target.value);
+                  setCity(''); // reset city
+                }}
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary"
+              >
+                {allStates.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                Ciudad / Municipio
+              </label>
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                disabled={!state}
+                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-brand-primary focus:ring-brand-primary disabled:opacity-50"
+              >
+                <option value="" disabled>-- Selecciona una ciudad --</option>
+                {state && locationsData[state]?.sort().map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {role !== 'client' && (

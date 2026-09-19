@@ -31,6 +31,18 @@ export default function SearchBar({
   const [locationsData, setLocationsData] = useState<Record<string, string[]>>({});
   const [allStates, setAllStates] = useState<string[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState(true);
+  
+  // Sugerencias de Autocompletado
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const POPULAR_TAGS = [
+    'Minisplit', 'Fuga de agua', 'Chapa rota', 'Tablero eléctrico',
+    'Instalación eléctrica', 'Mantenimiento', 'Bomba de agua',
+    'Destape de drenaje', 'Cambio de cerradura', 'Cortocircuito', 
+    'Refrigerador', 'Lavadora', 'Centro de carga', 'Tubería rota'
+  ];
+  const filteredSuggestions = query.trim().length >= 2
+    ? POPULAR_TAGS.filter(t => t.toLowerCase().includes(query.trim().toLowerCase()))
+    : [];
 
   useEffect(() => {
     fetch('/api/locations')
@@ -92,18 +104,42 @@ export default function SearchBar({
         className="bg-white rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200 p-2.5 sm:p-3 flex flex-col md:flex-row items-stretch gap-2.5"
       >
         {/* Input término de búsqueda */}
-        <div className="flex-1 flex items-center gap-2.5 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 focus-within:border-brand-primary focus-within:bg-white transition-all">
+        <div className="flex-1 flex items-center gap-2.5 px-3 py-2 bg-slate-50/80 rounded-xl border border-slate-100 focus-within:border-brand-primary focus-within:bg-white transition-all relative">
           <Search className="w-5 h-5 text-slate-400 shrink-0" />
           <input
             type="text"
             value={query}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             onChange={(e) => {
               setQuery(e.target.value);
+              setShowSuggestions(true);
               if (onFilterChange) onFilterChange({ query: e.target.value, state, city, cfdiOnly });
             }}
             placeholder="¿Qué servicio necesitas? (ej. minisplit, fuga, chapa, corto)"
             className="w-full bg-transparent border-0 focus:ring-0 text-sm sm:text-base text-brand-base placeholder:text-slate-400 p-0"
           />
+          
+          {/* Autocomplete Dropdown */}
+          {showSuggestions && filteredSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 overflow-hidden">
+              {filteredSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => {
+                    setQuery(suggestion);
+                    setShowSuggestions(false);
+                    if (onFilterChange) onFilterChange({ query: suggestion, state, city, cfdiOnly });
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                >
+                  <Search className="w-3.5 h-3.5 text-slate-400" />
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Selector de Estado */}

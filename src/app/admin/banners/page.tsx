@@ -19,11 +19,24 @@ export default function AdminBannersPage() {
   const [placement, setPlacement] = useState<'home_top' | 'category_middle' | 'home_bottom' | 'search_results'>('home_top');
   const [aspectRatio, setAspectRatio] = useState<'horizontal' | 'vertical' | 'square'>('horizontal');
   const [endsAt, setEndsAt] = useState('2026-12-31');
+  const [targetState, setTargetState] = useState('');
+  const [targetCity, setTargetCity] = useState('');
+
+  // Localidades
+  const [locationsData, setLocationsData] = useState<Record<string, string[]>>({});
+  const [allStates, setAllStates] = useState<string[]>([]);
 
   const supabase = createClient();
 
   useEffect(() => {
     fetchBanners();
+    fetch('/api/locations')
+      .then(res => res.json())
+      .then(data => {
+        setLocationsData(data);
+        setAllStates(Object.keys(data).sort());
+      })
+      .catch(err => console.error(err));
   }, []);
 
   const fetchBanners = async () => {
@@ -50,6 +63,8 @@ export default function AdminBannersPage() {
     // Extraer solo la fecha de YYYY-MM-DD
     const endDate = banner.ends_at ? banner.ends_at.split('T')[0] : '2026-12-31';
     setEndsAt(endDate);
+    setTargetState(banner.target_state || '');
+    setTargetCity(banner.target_city || '');
     
     // Scroll smoothly to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -64,6 +79,8 @@ export default function AdminBannersPage() {
     setPlacement('home_top');
     setAspectRatio('horizontal');
     setEndsAt('2026-12-31');
+    setTargetState('');
+    setTargetCity('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,6 +98,8 @@ export default function AdminBannersPage() {
       city: 'Tuxtla Gutiérrez',
       ends_at: endsAt ? `${endsAt}T23:59:59Z` : '2026-12-31T23:59:59Z',
       is_active: true,
+      target_state: targetState || null,
+      target_city: targetCity || null,
     };
 
     if (editingBannerId) {
@@ -276,6 +295,44 @@ export default function AdminBannersPage() {
                 className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
               />
             </div>
+            
+            <div className="sm:col-span-2 border-t border-slate-200 dark:border-slate-800 pt-4 mt-2">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">Segmentación Geográfica (Opcional)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Estado Objetivo
+                  </label>
+                  <select
+                    value={targetState}
+                    onChange={(e) => {
+                      setTargetState(e.target.value);
+                      setTargetCity('');
+                    }}
+                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
+                  >
+                    <option value="">Nacional (Cualquier Estado)</option>
+                    {allStates.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                    Ciudad Objetivo
+                  </label>
+                  <select
+                    value={targetCity}
+                    onChange={(e) => setTargetCity(e.target.value)}
+                    disabled={!targetState}
+                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary disabled:opacity-50"
+                  >
+                    <option value="">Todo el Estado</option>
+                    {targetState && locationsData[targetState]?.sort().map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-2">Si dejas ambos vacíos, el banner será "Nacional" y aparecerá para todos.</p>
+            </div>
           </div>
 
           <div className="flex justify-end pt-2">
@@ -317,7 +374,7 @@ export default function AdminBannersPage() {
                       {!banner.is_active && <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase">Pausado</span>}
                     </h4>
                     <p className="text-xs text-slate-400">
-                      Posición: <strong className="text-brand-primary">{banner.placement}</strong> • Vence: {banner.ends_at.split('T')[0]}
+                      <strong className="text-brand-primary">{banner.placement}</strong> • {banner.target_city || banner.target_state || 'Nacional'}
                     </p>
                     <a
                       href={banner.target_url}

@@ -12,6 +12,8 @@ interface SponsorBannerProps {
   categoryId?: number;
   banner?: Banner;
   className?: string;
+  targetState?: string;
+  targetCity?: string;
 }
 
 export default function SponsorBanner({
@@ -19,6 +21,8 @@ export default function SponsorBanner({
   categoryId,
   banner: propBanner,
   className = '',
+  targetState,
+  targetCity,
 }: SponsorBannerProps) {
   const [banner, setBanner] = useState<Banner | null>(propBanner || null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,12 +40,29 @@ export default function SponsorBanner({
         if (categoryId) {
           query = query.eq('category_id', categoryId);
         }
+
+        // Filtro Geográfico: Si se especifica ciudad, buscar banners de esa ciudad o nacionales (null)
+        if (targetCity && targetCity !== 'Todas las ciudades') {
+          query = query.or(`target_city.is.null,target_city.eq.${targetCity}`);
+        } else if (targetState && targetState !== 'Todos los estados') {
+          query = query.or(`target_state.is.null,target_state.eq.${targetState}`);
+        }
         
         const { data, error } = await query;
         if (data && data.length > 0) {
-          // Rotación aleatoria: escoge un banner al azar de los disponibles
-          const randomIndex = Math.floor(Math.random() * data.length);
-          setBanner(data[randomIndex]);
+          // Priorizar los banners locales sobre los nacionales
+          data.sort((a, b) => {
+            if (a.target_city && !b.target_city) return -1;
+            if (!a.target_city && b.target_city) return 1;
+            return 0;
+          });
+          
+          // Filtrar los mejores matches (ej. solo locales si existen, sino nacionales)
+          const bestMatches = data.filter(d => d.target_city === data[0].target_city);
+          
+          // Rotación aleatoria entre los mejores matches
+          const randomIndex = Math.floor(Math.random() * bestMatches.length);
+          setBanner(bestMatches[randomIndex]);
         }
       }
     }
