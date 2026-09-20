@@ -38,7 +38,10 @@ export default function SearchBar({
     'Minisplit', 'Fuga de agua', 'Chapa rota', 'Tablero eléctrico',
     'Instalación eléctrica', 'Mantenimiento', 'Bomba de agua',
     'Destape de drenaje', 'Cambio de cerradura', 'Cortocircuito', 
-    'Refrigerador', 'Lavadora', 'Centro de carga', 'Tubería rota'
+    'Refrigerador', 'Lavadora', 'Centro de carga', 'Tubería rota',
+    'Carpintería', 'Muebles a medida', 'Herrería', 'Soldadura',
+    'Albañilería', 'Pintura', 'Impermeabilización', 'Fumigación',
+    'Electricista', 'Plomero', 'Mecánico', 'Cerrajero'
   ];
   const filteredSuggestions = query.trim().length >= 2
     ? POPULAR_TAGS.filter(t => t.toLowerCase().includes(query.trim().toLowerCase()))

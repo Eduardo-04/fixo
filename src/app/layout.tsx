@@ -26,7 +26,6 @@ export const metadata: Metadata = {
   keywords: ['técnicos Tuxtla', 'plomero Tuxtla Gutiérrez', 'electricista Chiapas', 'minisplits clima', 'oficios Chiapas', 'tarjeta digital QR'],
   manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.ico',
     apple: '/icons/icon-192x192.png',
   },
   openGraph: {
