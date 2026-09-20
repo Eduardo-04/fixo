@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { PlusCircle, Eye, MousePointerClick, Calendar, ExternalLink, Sparkles, Pencil } from 'lucide-react';
 import type { Banner } from '@/types/database';
 import { createClient } from '@/lib/supabase/client';
+import ImageUploader from '@/components/technician/ImageUploader';
 
 export default function AdminBannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -16,6 +17,7 @@ export default function AdminBannersPage() {
   const [description, setDescription] = useState('');
   const [targetUrl, setTargetUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [placement, setPlacement] = useState<'home_top' | 'category_middle' | 'home_bottom' | 'search_results'>('home_top');
   const [aspectRatio, setAspectRatio] = useState<'horizontal' | 'vertical' | 'square'>('horizontal');
   const [endsAt, setEndsAt] = useState('2026-12-31');
@@ -58,6 +60,7 @@ export default function AdminBannersPage() {
     setDescription(banner.description || '');
     setTargetUrl(banner.target_url);
     setImageUrl(banner.banner_image_url);
+    setBannerFile(null); // Reset file
     setPlacement(banner.placement);
     setAspectRatio(banner.aspect_ratio);
     // Extraer solo la fecha de YYYY-MM-DD
@@ -76,6 +79,7 @@ export default function AdminBannersPage() {
     setDescription('');
     setTargetUrl('');
     setImageUrl('');
+    setBannerFile(null);
     setPlacement('home_top');
     setAspectRatio('horizontal');
     setEndsAt('2026-12-31');
@@ -87,11 +91,35 @@ export default function AdminBannersPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    let finalImageUrl = imageUrl;
+
+    // Subir imagen si se seleccionó un archivo
+    if (bannerFile) {
+      const fileExt = bannerFile.name.split('.').pop();
+      const fileName = `banners/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      
+      const { error: uploadError, data } = await supabase.storage
+        .from('public-media')
+        .upload(fileName, bannerFile);
+
+      if (uploadError) {
+        alert('Error al subir la imagen: ' + uploadError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('public-media')
+        .getPublicUrl(fileName);
+
+      finalImageUrl = publicUrlData.publicUrl;
+    }
+
     const bannerData = {
       sponsor_name: sponsorName,
       description: description || null,
       target_url: targetUrl,
-      banner_image_url: imageUrl || 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80',
+      banner_image_url: finalImageUrl || 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80',
       placement,
       aspect_ratio: aspectRatio,
       category_id: null,
@@ -269,18 +297,38 @@ export default function AdminBannersPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
-                URL de la Imagen
-              </label>
-              <input
-                type="url"
-                required
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Opción 1: URL de la Imagen (Si ya está en internet)
+                </label>
+                <input
+                  type="url"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    if (e.target.value) setBannerFile(null);
+                  }}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-950 focus:border-brand-primary focus:ring-brand-primary"
+                />
+              </div>
+
+              <div>
+                <ImageUploader 
+                  label="Opción 2: Subir archivo desde tu dispositivo"
+                  sublabel="Recomendado: 1200x400 para horizontal. JPG/PNG/WEBP."
+                  onFileReady={(file) => {
+                    setBannerFile(file);
+                    setImageUrl(''); // Limpiar URL si sube archivo
+                  }}
+                />
+                {bannerFile && (
+                  <p className="text-xs text-emerald-600 font-bold mt-2">
+                    ✓ Archivo listo para subir ({bannerFile.name})
+                  </p>
+                )}
+              </div>
             </div>
             
             <div>
