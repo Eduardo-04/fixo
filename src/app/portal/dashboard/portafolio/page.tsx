@@ -13,8 +13,8 @@ export default function PortfolioPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isPro, setIsPro] = useState(false);
 
-  const FREE_LIMIT = 6;
-  const PRO_LIMIT = 30;
+  const FREE_LIMIT = 3;
+  const PRO_LIMIT = 12;
   
   // Determina el límite actual basado en si es PRO o no
   const currentLimit = isPro ? PRO_LIMIT : FREE_LIMIT;
